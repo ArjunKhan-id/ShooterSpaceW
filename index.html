@@ -1,106 +1,275 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-<title>Login - SpaceShooter</title>
-<style>
-  * {margin:0; padding:0; box-sizing:border-box;}
-  html, body {height:100%; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:#0a0f23; color:#e0e7ff;}
-  #app {
-    max-width: 350px;
-    min-height: 600px;
-    margin: 20px auto;
-    padding: 15px;
-    background: #121926;
-    border-radius: 10px;
-    box-shadow: 0 0 15px #1d26a0aa;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-  h1 {color:#90a0ff; font-weight:600; text-align:center; margin-bottom:5px;}
-  p.centered {color:#aaa; text-align:center; margin-bottom:20px;}
-  form {display:flex; flex-direction: column;}
-  label {
-    font-weight: 600;
-    color: #7180ff;
-    margin-bottom:4px;
-  }
-  input[type="email"], input[type="password"] {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 14px;
-    border-radius: 6px;
-    border: none;
-    background: #2a2f54;
-    color: #cbd5ff;
-    font-size: 16px;
-  }
-  input::placeholder {
-    color: #999fcf;
-  }
-  button {
-    background: #3b4ddb;
-    border: none;
-    color: white;
-    padding: 10px 14px;
-    border-radius: 6px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.3s ease;
-    margin-top: 8px;
-  }
-  button:hover:not(:disabled) {
-    background: #5c72ff;
-  }
-  button:disabled {
-    background: #3b4ddb80;
-    cursor: not-allowed;
-  }
-  .link-toggle {
-    font-size: 0.9rem;
-    color: #94a1ff;
-    cursor: pointer;
-    text-align: right;
-    margin-top: -10px;
-    margin-bottom: 20px;
-  }
-  .link-toggle:hover {
-    color: #bbc9ff;
-    text-decoration: underline;
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern OTP Login</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --text: #2b2d42;
+            --text-light: #8d99ae;
+            --bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --border: #e9ecef;
+            --error: #ef233c;
+            --success: #06d6a0;
+        }
 
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-analytics-compat.js"></script>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-<!-- EmailJS SDK -->
-<script src="https://cdn.emailjs.com/dist/email.min.js"></script>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
 
-<!-- SweetAlert2 CDN -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        .container {
+            width: 100%;
+            max-width: 420px;
+        }
 
+        .auth-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            padding: 40px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .logo {
+            margin-bottom: 30px;
+        }
+
+        .logo img {
+            height: 48px;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: var(--text-light);
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: var(--primary-dark);
+        }
+
+        button:disabled {
+            background-color: #a5b4fc;
+            cursor: not-allowed;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 25px 0;
+            color: var(--text-light);
+            font-size: 13px;
+        }
+
+        .divider::before, .divider::after {
+            content: "";
+            flex: 1;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .divider::before {
+            margin-right: 10px;
+        }
+
+        .divider::after {
+            margin-left: 10px;
+        }
+
+        .footer-text {
+            font-size: 13px;
+            color: var(--text-light);
+            margin-top: 30px;
+        }
+
+        .footer-text a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .otp-container {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+        }
+
+        .otp-input {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            font-size: 18px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        .resend-link {
+            font-size: 13px;
+            color: var(--text-light);
+            margin-top: 15px;
+            display: block;
+        }
+
+        .resend-link a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .error-message {
+            color: var(--error);
+            font-size: 13px;
+            margin-top: 5px;
+            text-align: left;
+        }
+
+        .success-message {
+            color: var(--success);
+            font-size: 13px;
+            margin-top: 5px;
+            text-align: left;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 480px) {
+            .auth-card {
+                padding: 30px 20px;
+            }
+        }
+    </style>
 </head>
 <body>
-<div id="app">
-  <h1>SpaceShooter Login</h1>
-  <p class="centered">Modern & Minimalist</p>
-  <form id="auth-form" aria-label="Login or create account form">
-    <label for="email">Email</label>
-    <input type="email" id="email" placeholder="Your email" required autocomplete="email" />
-    
-    <label for="password">Password</label>
-    <input type="password" id="password" placeholder="Password" required autocomplete="current-password" />
-    
-    <button type="submit" id="btn-login">Login</button>
-    <button type="button" id="btn-signup" style="background:#2d44bb;">Create Account</button>
-  </form>
-</div>
+    <div class="container">
+        <div class="auth-card">
+            <div class="logo">
+                <img src="https://via.placeholder.com/48x48" alt="Company Logo">
+            </div>
+            
+            <!-- Email Input Screen -->
+            <div id="email-screen">
+                <h1>Welcome Back</h1>
+                <p class="subtitle">Enter your email to receive an OTP</p>
+                
+                <form id="email-form">
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" placeholder="your@email.com" required>
+                        <div id="email-error" class="error-message hidden"></div>
+                    </div>
+                    
+                    <button type="submit" id="send-otp-btn">Send OTP</button>
+                </form>
+                
+                <div class="footer-text">
+                    Don't have an account? <a href="#" id="signup-link">Sign up</a>
+                </div>
+            </div>
+            
+            <!-- OTP Verification Screen -->
+            <div id="otp-screen" class="hidden">
+                <h1>Verify Your Email</h1>
+                <p class="subtitle">We've sent a 6-digit code to <span id="user-email"></span></p>
+                
+                <form id="otp-form">
+                    <div class="otp-container">
+                        <input type="text" class="otp-input" maxlength="1" pattern="[0-9]">
+                        <input type="text" class="otp-input" maxlength="1" pattern="[0-9]">
+                        <input type="text" class="otp-input" maxlength="1" pattern="[0-9]">
+                        <input type="text" class="otp-input" maxlength="1" pattern="[0-9]">
+                        <input type="text" class="otp-input" maxlength="1" pattern="[0-9]">
+                        <input type="text" class="otp-input" maxlength="1" pattern="[0-9]">
+                    </div>
+                    
+                    <div id="otp-error" class="error-message hidden"></div>
+                    <div id="otp-success" class="success-message hidden"></div>
+                    
+                    <button type="submit" id="verify-otp-btn">Verify</button>
+                    
+                    <p class="resend-link">
+                        Didn't receive code? <a href="#" id="resend-otp">Resend</a>
+                    </p>
+                </form>
+            </div>
+        </div>
+    </div>
 
-<script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+    
+    <!-- EmailJS SDK -->
+    <script>
   // Firebase configuration
   const firebaseConfig = {
     apiKey: "AIzaSyCLDqFv1kiOFG4xH8XR-lUyW_j-FbBp8aM",
@@ -125,103 +294,235 @@
   // Initialize EmailJS
   emailjs.init(blfHFeOa_y4hjwoMX);
 
-  const authForm = document.getElementById('auth-form');
-  const emailInput = document.getElementById('email');
-  const passwordInput = document.getElementById('password');
-  const btnLogin = document.getElementById('btn-login');
-  const btnSignup = document.getElementById('btn-signup');
 
-  function showAlert(type, message) {
-    Swal.fire({
-      icon: type,
-      title: message,
-      confirmButtonColor: '#3b4ddb',
-      background: '#121926',
-      color: '#e0e7ff',
-      buttonsStyling: true
-    });
-  }
+        // DOM elements
+        const emailScreen = document.getElementById('email-screen');
+        const otpScreen = document.getElementById('otp-screen');
+        const emailForm = document.getElementById('email-form');
+        const otpForm = document.getElementById('otp-form');
+        const emailInput = document.getElementById('email');
+        const userEmailSpan = document.getElementById('user-email');
+        const sendOtpBtn = document.getElementById('send-otp-btn');
+        const verifyOtpBtn = document.getElementById('verify-otp-btn');
+        const resendOtpLink = document.getElementById('resend-otp');
+        const emailError = document.getElementById('email-error');
+        const otpError = document.getElementById('otp-error');
+        const otpSuccess = document.getElementById('otp-success');
+        const otpInputs = document.querySelectorAll('.otp-input');
 
-  // Function to generate 6-digit OTP
-  function generateOTP() {
-    return Math.floor(100000 + Math.random() * 900000).toString();
-  }
+        // Global variables
+        let verificationId = null;
+        let email = '';
+        let otpTimer = null;
+        let otpTimeout = 120; // 2 minutes in seconds
 
-  // Function to send OTP email via EmailJS
-  function sendOTPEmail(email, otp) {
-    const templateParams = {
-      user_email: email,
-      otp_code: otp,
-      game_name: 'SpaceShooter'
-    };
-    return emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
-  }
+        // OTP input handling
+        otpInputs.forEach((input, index) => {
+            input.addEventListener('input', (e) => {
+                if (e.target.value.length === 1) {
+                    if (index < otpInputs.length - 1) {
+                        otpInputs[index + 1].focus();
+                    }
+                }
+            });
 
-  // Function to handle sending OTP and redirect to verify page
-  async function handleSendOTP(email) {
-    const otpCode = generateOTP();
-    try {
-      await sendOTPEmail(email, otpCode);
-      // Save OTP & email in session storage for verification page
-      sessionStorage.setItem('verificationOTP', otpCode);
-      sessionStorage.setItem('verificationEmail', email);
-      showAlert('success', 'OTP sent! Redirecting to email verification...');
-      setTimeout(() => {
-        window.location.href = 'verify.html';
-      }, 2000);
-    } catch (error) {
-      console.error('EmailJS send error:', error);
-      showAlert('error', 'Failed to send OTP email. Please try again.');
-    }
-  }
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && e.target.value.length === 0) {
+                    if (index > 0) {
+                        otpInputs[index - 1].focus();
+                    }
+                }
+            });
+        });
 
-  authForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    btnLogin.disabled = true;
-    btnSignup.disabled = true;
-    const email = emailInput.value.trim();
-    const password = passwordInput.value;
+        // Generate random OTP
+        function generateOTP() {
+            return Math.floor(100000 + Math.random() * 900000).toString();
+        }
 
-    try {
-      const userCredential = await auth.signInWithEmailAndPassword(email, password);
-      const user = userCredential.user;
-      if (!user.emailVerified) {
-        await handleSendOTP(email);
-      } else {
-        showAlert('success', 'Login successful! Redirecting...');
-        setTimeout(() => {
-          window.location.href = 'dashboard.html';
-        }, 1500);
-      }
-    } catch (err) {
-      showAlert('error', err.message);
-    }
-    btnLogin.disabled = false;
-    btnSignup.disabled = false;
-  });
+        // Send OTP via EmailJS
+        async function sendOTP(email, otp) {
+            try {
+                const response = await emailjs.send(
+                    "YOUR_EMAILJS_SERVICE_ID",
+                    "YOUR_EMAILJS_TEMPLATE_ID",
+                    {
+                        to_email: email,
+                        otp_code: otp,
+                        company_name: "Your App Name"
+                    }
+                );
+                return response;
+            } catch (error) {
+                console.error('EmailJS Error:', error);
+                throw error;
+            }
+        }
 
-  btnSignup.addEventListener('click', async () => {
-    btnLogin.disabled = true;
-    btnSignup.disabled = true;
+        // Start OTP timer
+        function startOTPTimer() {
+            let timeLeft = otpTimeout;
+            resendOtpLink.innerHTML = `Resend in ${timeLeft}s`;
+            resendOtpLink.style.pointerEvents = 'none';
+            
+            otpTimer = setInterval(() => {
+                timeLeft--;
+                resendOtpLink.innerHTML = `Resend in ${timeLeft}s`;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(otpTimer);
+                    resendOtpLink.innerHTML = 'Resend OTP';
+                    resendOtpLink.style.pointerEvents = 'auto';
+                }
+            }, 1000);
+        }
 
-    const email = emailInput.value.trim();
-    const password = passwordInput.value;
+        // Switch to OTP screen
+        function showOTPScreen(email) {
+            emailScreen.classList.add('hidden');
+            otpScreen.classList.remove('hidden');
+            userEmailSpan.textContent = email;
+            otpInputs[0].focus();
+            startOTPTimer();
+        }
 
-    if (password.length < 6) {
-      showAlert('error', "Password must be at least 6 characters.");
-      btnLogin.disabled = false;
-      btnSignup.disabled = false;
-      return;
-    }
-    try {
-      const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-      await handleSendOTP(email);
-    } catch (err) {
-      showAlert('error', err.message);
-    }
-    btnLogin.disabled = false;
-    btnSignup.disabled = false;
-  });
-</script>
+        // Handle email form submission
+        emailForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            email = emailInput.value.trim();
+            
+            if (!email) {
+                showError(emailError, 'Please enter your email');
+                return;
+            }
+            
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                showError(emailError, 'Please enter a valid email');
+                return;
+            }
+            
+            sendOtpBtn.disabled = true;
+            sendOtpBtn.textContent = 'Sending...';
+            
+            try {
+                // Check if user exists or create new user
+                const methods = await auth.fetchSignInMethodsForEmail(email);
+                
+                // Generate OTP
+                const otp = generateOTP();
+                
+                // Send OTP via EmailJS
+                await sendOTP(email, otp);
+                
+                // In production, you would verify the OTP with Firebase
+                // For demo, we'll just show the OTP screen
+                showOTPScreen(email);
+                
+                // Store the OTP in session for verification
+                sessionStorage.setItem('otp', otp);
+                sessionStorage.setItem('email', email);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showError(emailError, 'Failed to send OTP. Please try again.');
+            } finally {
+                sendOtpBtn.disabled = false;
+                sendOtpBtn.textContent = 'Send OTP';
+            }
+        });
+
+        // Handle OTP form submission
+        otpForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            let otp = '';
+            otpInputs.forEach(input => {
+                otp += input.value;
+            });
+            
+            if (otp.length !== 6) {
+                showError(otpError, 'Please enter the 6-digit code');
+                return;
+            }
+            
+            verifyOtpBtn.disabled = true;
+            verifyOtpBtn.textContent = 'Verifying...';
+            
+            try {
+                // In production, verify OTP with Firebase
+                // For demo, we'll compare with the stored OTP
+                const storedOtp = sessionStorage.getItem('otp');
+                const storedEmail = sessionStorage.getItem('email');
+                
+                if (otp === storedOtp && email === storedEmail) {
+                    showSuccess(otpSuccess, 'Verification successful! Redirecting...');
+                    
+                    // Sign in user with Firebase
+                    // In production, you would use Firebase auth to sign in
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 1500);
+                } else {
+                    showError(otpError, 'Invalid OTP. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError(otpError, 'Verification failed. Please try again.');
+            } finally {
+                verifyOtpBtn.disabled = false;
+                verifyOtpBtn.textContent = 'Verify';
+            }
+        });
+
+        // Handle resend OTP
+        resendOtpLink.addEventListener('click', async (e) => {
+            e.preventDefault();
+            
+            if (resendOtpLink.style.pointerEvents === 'none') return;
+            
+            try {
+                // Generate new OTP
+                const otp = generateOTP();
+                
+                // Send new OTP
+                await sendOTP(email, otp);
+                
+                // Store new OTP
+                sessionStorage.setItem('otp', otp);
+                
+                // Reset timer
+                clearInterval(otpTimer);
+                startOTPTimer();
+                
+                // Clear OTP inputs
+                otpInputs.forEach(input => {
+                    input.value = '';
+                });
+                otpInputs[0].focus();
+                
+                showSuccess(otpSuccess, 'New OTP sent successfully!');
+            } catch (error) {
+                console.error('Error:', error);
+                showError(otpError, 'Failed to resend OTP. Please try again.');
+            }
+        });
+
+        // Helper functions
+        function showError(element, message) {
+            element.textContent = message;
+            element.classList.remove('hidden');
+            setTimeout(() => {
+                element.classList.add('hidden');
+            }, 5000);
+        }
+
+        function showSuccess(element, message) {
+            element.textContent = message;
+            element.classList.remove('hidden');
+            setTimeout(() => {
+                element.classList.add('hidden');
+            }, 5000);
+        }
+    </script>
 </body>
 </html>
