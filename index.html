@@ -300,7 +300,7 @@
                 otp_code: otpCode
             };
 
-            emailjs.send('service_4uhgcel ', 'template_x6bj9ro', templateParams)
+            emailjs.send('service_4uhgcel', 'template_x6bj9ro', templateParams)
                 .then(function(response) {
                     console.log('OTP sent successfully', response);
                     showOTPModal();
