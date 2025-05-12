@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>STEM Quiz - Login/Register</title>
+    <title>ShooterSpaceW- Login/Register</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -107,6 +107,66 @@
             margin: 1rem 0;
             font-weight: 500;
         }
+
+        /* OTP Verification Modal */
+        .otp-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .otp-content {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 20px;
+            width: 400px;
+            max-width: 90%;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+
+        .otp-content h2 {
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .otp-content p {
+            color: white;
+            margin-bottom: 1.5rem;
+        }
+
+        .otp-inputs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+        }
+
+        .otp-inputs input {
+            width: 40px;
+            height: 40px;
+            text-align: center;
+            font-size: 1.2rem;
+        }
+
+        .resend-otp {
+            color: #d3cfff;
+            cursor: pointer;
+            margin-top: 1rem;
+            display: inline-block;
+        }
+
+        .resend-otp:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -138,7 +198,35 @@
             Sudah punya akun? <a onclick="switchForm()">Masuk disini</a>
         </div>
     </div>
-const firebaseConfig = {
+
+    <!-- OTP Verification Modal -->
+    <div class="otp-modal" id="otp-modal">
+        <div class="otp-content">
+            <h2>Verifikasi Email</h2>
+            <p>Kami telah mengirim kode OTP ke email Anda. Silakan masukkan kode tersebut di bawah ini.</p>
+            
+            <div class="otp-inputs">
+                <input type="text" maxlength="1" class="otp-input">
+                <input type="text" maxlength="1" class="otp-input">
+                <input type="text" maxlength="1" class="otp-input">
+                <input type="text" maxlength="1" class="otp-input">
+                <input type="text" maxlength="1" class="otp-input">
+                <input type="text" maxlength="1" class="otp-input">
+            </div>
+            
+            <button id="verify-otp-btn">Verifikasi</button>
+            <div class="resend-otp" id="resend-otp">Kirim ulang OTP</div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+
+    <script>
+        // Initialize Firebase
+        const firebaseConfig = {
   apiKey: "AIzaSyCLDqFv1kiOFG4xH8XR-lUyW_j-FbBp8aM",
   authDomain: "shooterspacew.firebaseapp.com",
   databaseURL: "https://shooterspacew-default-rtdb.firebaseio.com",
@@ -148,10 +236,19 @@ const firebaseConfig = {
   appId: "1:780477534762:web:26a98d067ebca133e8a953",
   measurementId: "G-CLTY47FSSZ"
 };
-    firebase.initializeApp(firebaseConfig);
+
+        firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
 
+        // Initialize EmailJS
+        (function() {
+            emailjs.init("blfHFeOa_y4hjwoMX"); // Ganti dengan EmailJS User ID Anda
+        })();
+
         let isLogin = false;
+        let otpCode = "";
+        let verificationEmail = "";
+        let verificationUsername = "";
 
         function switchForm() {
             isLogin = !isLogin;
@@ -188,6 +285,100 @@ const firebaseConfig = {
             }
         }
 
+        function generateOTP() {
+            return Math.floor(100000 + Math.random() * 900000).toString();
+        }
+
+        function sendOTP(email, username) {
+            otpCode = generateOTP();
+            verificationEmail = email;
+            verificationUsername = username;
+
+            const templateParams = {
+                to_email: email,
+                to_name: username,
+                otp_code: otpCode
+            };
+
+            emailjs.send('service_4uhgcel ', 'template_x6bj9ro', templateParams)
+                .then(function(response) {
+                    console.log('OTP sent successfully', response);
+                    showOTPModal();
+                }, function(error) {
+                    console.error('Failed to send OTP', error);
+                    Swal.fire({
+                        title: 'Gagal mengirim OTP',
+                        text: 'Silakan coba lagi nanti',
+                        icon: 'error'
+                    });
+                });
+        }
+
+        function showOTPModal() {
+            const modal = document.getElementById('otp-modal');
+            modal.style.display = 'flex';
+            
+            // Focus first OTP input
+            const otpInputs = document.querySelectorAll('.otp-input');
+            otpInputs[0].focus();
+            
+            // Auto-tab between OTP inputs
+            otpInputs.forEach((input, index) => {
+                input.addEventListener('input', () => {
+                    if (input.value.length === 1 && index < otpInputs.length - 1) {
+                        otpInputs[index + 1].focus();
+                    }
+                });
+                
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Backspace' && input.value.length === 0 && index > 0) {
+                        otpInputs[index - 1].focus();
+                    }
+                });
+            });
+        }
+
+        function hideOTPModal() {
+            document.getElementById('otp-modal').style.display = 'none';
+        }
+
+        function verifyOTP() {
+            const otpInputs = document.querySelectorAll('.otp-input');
+            let enteredOTP = '';
+            
+            otpInputs.forEach(input => {
+                enteredOTP += input.value;
+            });
+            
+            if (enteredOTP === otpCode) {
+                // OTP verified, create user account
+                auth.createUserWithEmailAndPassword(verificationEmail, document.getElementById('password').value)
+                    .then(({ user }) => {
+                        return user.updateProfile({ displayName: verificationUsername });
+                    })
+                    .then(() => {
+                        hideOTPModal();
+                        Swal.fire({
+                            title: 'Verifikasi Berhasil!',
+                            text: 'Akun Anda telah berhasil dibuat',
+                            icon: 'success'
+                        }).then(() => {
+                            window.location.href = "dashboard.html";
+                        });
+                    })
+                    .catch(error => {
+                        handleAuthError(error);
+                        hideOTPModal();
+                    });
+            } else {
+                Swal.fire({
+                    title: 'Kode OTP Salah',
+                    text: 'Silakan coba lagi',
+                    icon: 'error'
+                });
+            }
+        }
+
         document.getElementById('auth-form').addEventListener('submit', (e) => {
             e.preventDefault();
             
@@ -212,28 +403,28 @@ const firebaseConfig = {
                 // Login logic
                 auth.signInWithEmailAndPassword(email, password)
                     .then(() => {
-                        window.location.href = "game.html"; // Redirect ke game
+                        window.location.href = "dashboard.html"; // Redirect ke game
                     })
                     .catch(error => {
                         handleAuthError(error);
                     });
             } else {
-                // Register logic
-                auth.createUserWithEmailAndPassword(email, password)
-                    .then(({ user }) => {
-                        user.updateProfile({ displayName: username })
-                            .then(() => {
-                                Swal.fire({
-                                    title: 'Pendaftaran Berhasil!',
-                                    text: 'Silakan verifikasi email Anda',
-                                    icon: 'success'
-                                });
-                            });
-                    })
-                    .catch(error => {
-                        handleAuthError(error);
-                    });
+                // Register logic - send OTP first
+                sendOTP(email, username);
             }
+        });
+
+        // OTP Verification Button
+        document.getElementById('verify-otp-btn').addEventListener('click', verifyOTP);
+        
+        // Resend OTP Button
+        document.getElementById('resend-otp').addEventListener('click', () => {
+            sendOTP(verificationEmail, verificationUsername);
+            Swal.fire({
+                title: 'OTP Dikirim Ulang',
+                text: 'Kode OTP baru telah dikirim ke email Anda',
+                icon: 'success'
+            });
         });
 
         function handleAuthError(error) {
@@ -262,8 +453,8 @@ const firebaseConfig = {
 
         // Check auth state
         auth.onAuthStateChanged(user => {
-            if(user) {
-                window.location.href = "game.html";
+            if(user && window.location.pathname.endsWith('index.html')) {
+                window.location.href = "dashboard.html";
             }
         });
     </script>
