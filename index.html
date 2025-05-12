@@ -1,545 +1,271 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Modern & Simple OTP Login</title>
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
-  <style>
-    :root {
-      --primary: #4f46e5;
-      --primary-dark: #4338ca;
-      --background: #f9fafb;
-      --card-bg: #fff;
-      --text-primary: #111827;
-      --text-secondary: #6b7280;
-      --border: #e5e7eb;
-      --success: #10b981;
-      --error: #ef4444;
-      --shadow: rgba(0, 0, 0, 0.05);
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STEM Quiz - Login/Register</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Inter', sans-serif;
-    }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
 
-    body, html {
-      height: 100%;
-      background-color: var(--background);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 1rem;
-      user-select: none;
-    }
+        .auth-container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 20px;
+            width: 400px;
+            max-width: 90%;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
 
-    .auth-container {
-      background: var(--card-bg);
-      box-shadow: 0 12px 24px var(--shadow);
-      border-radius: 14px;
-      width: 100%;
-      max-width: 400px;
-      padding: 2.5rem 2rem 3rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      transition: box-shadow 0.3s ease;
-    }
-    .auth-container:hover {
-      box-shadow: 0 16px 32px var(--shadow);
-    }
+        h2 {
+            color: white;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
 
-    .logo {
-      width: 56px;
-      height: 56px;
-      margin-bottom: 1.5rem;
-    }
-    .logo img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-    }
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
 
-    h1 {
-      font-weight: 600;
-      font-size: 1.75rem;
-      color: var(--text-primary);
-      margin-bottom: 0.5rem;
-      text-align: center;
-    }
+        label {
+            display: block;
+            color: white;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
 
-    p.subtitle {
-      color: var(--text-secondary);
-      font-size: 0.95rem;
-      margin-bottom: 2rem;
-      text-align: center;
-    }
+        input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 1rem;
+        }
 
-    form {
-      width: 100%;
-    }
+        input::placeholder {
+            color: rgba(255,255,255,0.7);
+        }
 
-    .form-group {
-      margin-bottom: 1.5rem;
-      position: relative;
-    }
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 38px;
+            cursor: pointer;
+            color: rgba(255,255,255,0.7);
+        }
 
-    label {
-      display: block;
-      font-weight: 600;
-      margin-bottom: 0.4rem;
-      color: var(--text-primary);
-      font-size: 0.9rem;
-      user-select: none;
-    }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #6c63ff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
 
-    input[type="email"], input[type="text"] {
-      width: 100%;
-      padding: 0.75rem 1rem;
-      font-size: 1rem;
-      border-radius: 8px;
-      border: 1.5px solid var(--border);
-      transition: border-color 0.3s ease;
-      color: var(--text-primary);
-      letter-spacing: 0.03em;
-    }
-    input[type="email"]:focus, input[type="text"]:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 8px rgba(79, 70, 229, 0.3);
-    }
+        button:hover {
+            background: #5248cc;
+        }
 
-    .error-message, .success-message {
-      position: absolute;
-      bottom: -1.3rem;
-      left: 0;
-      font-size: 0.8rem;
-      user-select: none;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
+        .switch-form {
+            text-align: center;
+            margin-top: 1rem;
+            color: white;
+        }
 
-    .error-message.visible {
-      color: var(--error);
-      opacity: 1;
-    }
+        .switch-form a {
+            color: #d3cfff;
+            cursor: pointer;
+            text-decoration: underline;
+        }
 
-    .success-message.visible {
-      color: var(--success);
-      opacity: 1;
-    }
-
-    button {
-      width: 100%;
-      padding: 0.9rem 1rem;
-      background-color: var(--primary);
-      color: #fff;
-      font-weight: 600;
-      font-size: 1rem;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      box-shadow: 0 6px 12px rgba(79, 70, 229, 0.4);
-      transition: background-color 0.3s ease, box-shadow 0.3s ease;
-      user-select: none;
-    }
-
-    button:hover:not(:disabled) {
-      background-color: var(--primary-dark);
-      box-shadow: 0 8px 16px rgba(67, 56, 202, 0.7);
-    }
-
-    button:disabled {
-      background-color: #a5b4fc;
-      cursor: not-allowed;
-      box-shadow: none;
-    }
-
-    .divider {
-      text-align: center;
-      margin: 2.5rem 0 1.5rem;
-      color: var(--text-secondary);
-      font-size: 0.85rem;
-      user-select: none;
-    }
-
-    .footer-text {
-      font-size: 0.85rem;
-      user-select: none;
-      color: var(--text-secondary);
-      text-align: center;
-      user-select: none;
-    }
-
-    .footer-text a {
-      color: var(--primary);
-      font-weight: 600;
-      text-decoration: none;
-      user-select: none;
-    }
-    .footer-text a:hover {
-      text-decoration: underline;
-    }
-
-    .otp-inputs {
-      display: flex;
-      justify-content: space-between;
-      gap: 0.7rem;
-      margin-bottom: 1.2rem;
-    }
-
-    .otp-inputs input {
-      width: 3.5rem;
-      height: 3.5rem;
-      text-align: center;
-      font-size: 1.6rem;
-      font-weight: 600;
-      border: 1.5px solid var(--border);
-      border-radius: 10px;
-      transition: border-color 0.3s ease;
-      color: var(--text-primary);
-      user-select: text;
-      padding: 0;
-    }
-    .otp-inputs input:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 8px rgba(79, 70, 229, 0.3);
-      outline: none;
-    }
-
-    .resend {
-      text-align: center;
-      font-size: 0.85rem;
-      color: var(--text-secondary);
-      user-select: none;
-      margin-top: 0.4rem;
-    }
-    .resend a {
-      color: var(--primary);
-      font-weight: 600;
-      cursor: pointer;
-      text-decoration: none;
-      user-select: none;
-    }
-    .resend a:focus, .resend a:hover {
-      text-decoration: underline;
-      outline: none;
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    @media(max-width: 400px){
-      .auth-container {
-        padding: 2rem 1.5rem 2.5rem;
-      }
-      .otp-inputs input {
-        width: 3rem;
-        height: 3rem;
-        font-size: 1.3rem;
-      }
-    }
-  </style>
+        #error-message {
+            color: #ff6b6b;
+            text-align: center;
+            margin: 1rem 0;
+            font-weight: 500;
+        }
+    </style>
 </head>
 <body>
-  <main class="auth-container" role="main" aria-label="OTP authentication form">
-    <div class="logo" aria-hidden="true">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/0/02/Firebase_Logo.svg" alt="App Logo" />
+    <div class="auth-container">
+        <h2 id="form-title">Daftar Akun Baru</h2>
+        <div id="error-message"></div>
+        
+        <form id="auth-form">
+            <div class="form-group" id="username-group">
+                <label for="username">Nama Pengguna</label>
+                <input type="text" id="username" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" required>
+                <i class="fas fa-eye password-toggle" onclick="togglePassword()"></i>
+            </div>
+            
+            <button type="submit" id="submit-btn">Daftar</button>
+        </form>
+        
+        <div class="switch-form">
+            Sudah punya akun? <a onclick="switchForm()">Masuk disini</a>
+        </div>
     </div>
+const firebaseConfig = {
+  apiKey: "AIzaSyCLDqFv1kiOFG4xH8XR-lUyW_j-FbBp8aM",
+  authDomain: "shooterspacew.firebaseapp.com",
+  databaseURL: "https://shooterspacew-default-rtdb.firebaseio.com",
+  projectId: "shooterspacew",
+  storageBucket: "shooterspacew.firebasestorage.app",
+  messagingSenderId: "780477534762",
+  appId: "1:780477534762:web:26a98d067ebca133e8a953",
+  measurementId: "G-CLTY47FSSZ"
+};
+    firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
 
-    <!-- Email Input Screen -->
-    <section id="email-screen">
-      <h1>Sign In or Sign Up</h1>
-      <p class="subtitle">Enter your email address to get started</p>
+        let isLogin = false;
 
-      <form id="email-form" novalidate>
-        <div class="form-group">
-          <label for="email-input">Email Address</label>
-          <input type="email" id="email-input" name="email" autocomplete="email" placeholder="you@example.com" required aria-describedby="email-error" />
-          <div id="email-error" class="error-message" aria-live="polite"></div>
-        </div>
-        <button type="submit" id="send-otp-btn" aria-live="polite" aria-label="Send One Time Password">Send OTP</button>
-      </form>
-
-      <div class="footer-text" aria-live="polite">Don't have an account? Just enter your email and get started—no separate signup needed!</div>
-    </section>
-
-    <!-- OTP Verification Screen -->
-    <section id="otp-screen" class="hidden" aria-live="polite" aria-label="OTP verification form">
-      <h1>Enter OTP</h1>
-      <p class="subtitle">We sent a 6-digit code to <span id="user-email" aria-atomic="true"></span></p>
-
-      <form id="otp-form" novalidate>
-        <div class="otp-inputs">
-          <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="Digit 1" />
-          <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="Digit 2" />
-          <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="Digit 3" />
-          <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="Digit 4" />
-          <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="Digit 5" />
-          <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="Digit 6" />
-        </div>
-        <div id="otp-error" class="error-message" aria-live="polite"></div>
-        <div id="otp-success" class="success-message" aria-live="polite"></div>
-        <button type="submit" id="verify-otp-btn">Verify Code</button>
-      </form>
-      <p class="resend">
-        Didn't receive it? <a href="#" id="resend-otp">Resend OTP</a>
-      </p>
-    </section>
-  </main>
-
-  <!-- Firebase SDK and EmailJS SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3.2.0/dist/email.min.js"></script>
-
-<script>
-  // Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyCLDqFv1kiOFG4xH8XR-lUyW_j-FbBp8aM",
-    authDomain: "shooterspacew.firebaseapp.com",
-    projectId: "shooterspacew",
-    storageBucket: "shooterspacew.appspot.com",
-    messagingSenderId: "780477534762",
-    appId: "1:780477534762:web:26a98d067ebca133e8a953",
-    measurementId: "G-CLTY47FSSZ"
-  };
-
-  // Initialize Firebase
-  const app = firebase.initializeApp(firebaseConfig);
-  const analytics = firebase.analytics();
-  const auth = firebase.auth();
-
-  // EmailJS config
-  const EMAILJS_USER_ID = 'blfHFeOa_y4hjwoMX';
-  const EMAILJS_SERVICE_ID = 'service_7l7t9mt';
-  const EMAILJS_TEMPLATE_ID = 'template_x6bj9ro';
-
-  // Initialize EmailJS
-  emailjs.init(blfHFeOa_y4hjwoMX);
-
-    // DOM Elements
-    const emailScreen = document.getElementById('email-screen');
-    const otpScreen = document.getElementById('otp-screen');
-    const emailForm = document.getElementById('email-form');
-    const otpForm = document.getElementById('otp-form');
-    const emailInput = document.getElementById('email-input');
-    const userEmailSpan = document.getElementById('user-email');
-    const sendOtpBtn = document.getElementById('send-otp-btn');
-    const verifyOtpBtn = document.getElementById('verify-otp-btn');
-    const resendOtpLink = document.getElementById('resend-otp');
-    const emailError = document.getElementById('email-error');
-    const otpError = document.getElementById('otp-error');
-    const otpSuccess = document.getElementById('otp-success');
-    const otpInputs = [...otpForm.querySelectorAll('input[type="text"]')];
-
-    // Variables
-    let currentEmail = '';
-    let otpSent = '';
-    let otpTimer = null;
-    const OTP_TIMEOUT = 120; // seconds
-
-    // Helper functions
-    function showMessage(element, message, type) {
-      element.textContent = message;
-      element.classList.remove('hidden', 'error-message', 'success-message');
-      element.classList.add(type === 'error' ? 'error-message' : 'success-message', 'visible');
-      setTimeout(() => {
-        element.classList.add('hidden');
-      }, 5000);
-    }
-
-    function clearMessages() {
-      emailError.classList.add('hidden');
-      otpError.classList.add('hidden');
-      otpSuccess.classList.add('hidden');
-    }
-
-    // OTP Input Autofocus handling
-    otpInputs.forEach((input, idx) => {
-      input.addEventListener('input', () => {
-        if (input.value.length === 1 && idx < otpInputs.length -1){
-          otpInputs[idx +1].focus();
-        }
-      });
-      input.addEventListener('keydown', (e) => {
-        if (e.key === 'Backspace' && input.value.length === 0 && idx > 0){
-          otpInputs[idx - 1].focus();
-        }
-      });
-    });
-
-    // Generate OTP
-    function generateOTP() {
-      return Math.floor(100000 + Math.random() * 900000).toString();
-    }
-
-    // Send OTP Email through EmailJS
-    async function sendOTP(email, otp) {
-      try {
-        return await emailjs.send(
-          "YOUR_EMAILJS_SERVICE_ID",
-          "YOUR_EMAILJS_TEMPLATE_ID",
-          {
-            to_email: email,
-            otp_code: otp,
-            company_name: "YourApp"
-          }
-        );
-      } catch (error) {
-        console.error("EmailJS error:", error);
-        throw error;
-      }
-    }
-
-    // Start resend timer
-    function startResendTimer() {
-      let timeLeft = OTP_TIMEOUT;
-      resendOtpLink.textContent = `Resend in ${timeLeft}s`;
-      resendOtpLink.style.pointerEvents = 'none';
-
-      otpTimer = setInterval(() => {
-        timeLeft--;
-        if (timeLeft <= 0) {
-          clearInterval(otpTimer);
-          resendOtpLink.textContent = "Resend OTP";
-          resendOtpLink.style.pointerEvents = 'auto';
-        } else {
-          resendOtpLink.textContent = `Resend in ${timeLeft}s`;
-        }
-      }, 1000);
-    }
-
-    // Show OTP Screen
-    function showOTPScreen(email) {
-      emailScreen.classList.add('hidden');
-      otpScreen.classList.remove('hidden');
-      userEmailSpan.textContent = email;
-      otpInputs.forEach(input => input.value = '');
-      otpInputs[0].focus();
-      startResendTimer();
-    }
-
-    // Email form submission
-    emailForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      clearMessages();
-      const email = emailInput.value.trim();
-
-      if (!email) {
-        showMessage(emailError, "Please enter your email", "error");
-        return;
-      }
-
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        showMessage(emailError, "Please enter a valid email", "error");
-        return;
-      }
-
-      sendOtpBtn.disabled = true;
-      sendOtpBtn.textContent = "Sending...";
-
-      try {
-        currentEmail = email;
-        // Check for existing sign-in methods
-        const methods = await auth.fetchSignInMethodsForEmail(email);
-
-        // If no existing account, create new user with random password
-        if (methods.length === 0) {
-          const randomPass = generateRandomPassword();
-          await auth.createUserWithEmailAndPassword(email, randomPass);
+        function switchForm() {
+            isLogin = !isLogin;
+            const title = document.getElementById('form-title');
+            const submitBtn = document.getElementById('submit-btn');
+            const usernameGroup = document.getElementById('username-group');
+            const switchLink = document.querySelector('.switch-form a');
+            
+            if(isLogin) {
+                title.textContent = "Masuk ke Akun Anda";
+                submitBtn.textContent = "Masuk";
+                usernameGroup.style.display = 'none';
+                switchLink.previousSibling.textContent = "Belum punya akun? ";
+                switchLink.textContent = "Daftar disini";
+            } else {
+                title.textContent = "Daftar Akun Baru";
+                submitBtn.textContent = "Daftar";
+                usernameGroup.style.display = 'block';
+                switchLink.previousSibling.textContent = "Sudah punya akun? ";
+                switchLink.textContent = "Masuk disini";
+            }
         }
 
-        // Generate and send OTP email
-        otpSent = generateOTP();
-        await sendOTP(email, otpSent);
-
-        showOTPScreen(email);
-      } catch (error) {
-        console.error("Error sending OTP:", error);
-        showMessage(emailError, "Failed to send OTP. Please try again.", "error");
-      } finally {
-        sendOtpBtn.disabled = false;
-        sendOtpBtn.textContent = "Send OTP";
-      }
-    });
-
-    // OTP form submission
-    otpForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      clearMessages();
-
-      let enteredOtp = otpInputs.map(input => input.value).join('');
-
-      if (enteredOtp.length !== 6) {
-        showMessage(otpError, "Please enter the 6-digit code", "error");
-        return;
-      }
-
-      verifyOtpBtn.disabled = true;
-      verifyOtpBtn.textContent = "Verifying...";
-
-      setTimeout(() => {
-        if (enteredOtp === otpSent) {
-          showMessage(otpSuccess, "Verification successful! Redirecting...", "success");
-          setTimeout(() => {
-            window.location.href = "dashboard.html"; // Redirect after success
-          }, 1500);
-        } else {
-          showMessage(otpError, "Invalid OTP. Please try again.", "error");
+        function togglePassword() {
+            const passwordField = document.getElementById('password');
+            const toggleIcon = document.querySelector('.password-toggle');
+            
+            if(passwordField.type === "password") {
+                passwordField.type = "text";
+                toggleIcon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                passwordField.type = "password";
+                toggleIcon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
         }
-        verifyOtpBtn.disabled = false;
-        verifyOtpBtn.textContent = "Verify Code";
-      }, 1000);
-    });
 
-    // Resend OTP handler
-    resendOtpLink.addEventListener('click', async (e) => {
-      e.preventDefault();
-      if (resendOtpLink.style.pointerEvents === "none") {
-        return;
-      }
+        document.getElementById('auth-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const username = isLogin ? null : document.getElementById('username').value;
+            const errorMessage = document.getElementById('error-message');
 
-      otpError.classList.add('hidden');
-      otpSuccess.classList.add('hidden');
-      resendOtpLink.style.pointerEvents = "none";
-      resendOtpLink.textContent = "Sending...";
+            errorMessage.textContent = "";
 
-      try {
-        otpSent = generateOTP();
-        await sendOTP(currentEmail, otpSent);
-        otpInputs.forEach(input => input.value = '');
-        otpInputs[0].focus();
-        startResendTimer();
-        showMessage(otpSuccess, "New OTP sent successfully!", "success");
-      } catch (error) {
-        console.error("Error resending OTP:", error);
-        showMessage(otpError, "Failed to resend OTP. Please try again.", "error");
-        resendOtpLink.style.pointerEvents = "auto";
-        resendOtpLink.textContent = "Resend OTP";
-      }
-    });
+            if(!isLogin && !username) {
+                errorMessage.textContent = "Nama pengguna harus diisi";
+                return;
+            }
 
-    // Helper: Generate random password for new users
-    function generateRandomPassword(length = 12) {
-      const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$!";
-      let password = "";
-      for (let i = 0; i < length; i++) {
-        let randIndex = Math.floor(Math.random() * charset.length);
-        password += charset[randIndex];
-      }
-      return password;
-    }
-firebase.auth().signInWithEmailAndPassword(email, password)
-  .then(() => {
-    window.location.href = "dashboard.html"; // <-- alat pemindah halaman
-  })
-  </script>
+            if(password.length < 6) {
+                errorMessage.textContent = "Password minimal 6 karakter";
+                return;
+            }
+
+            if(isLogin) {
+                // Login logic
+                auth.signInWithEmailAndPassword(email, password)
+                    .then(() => {
+                        window.location.href = "game.html"; // Redirect ke game
+                    })
+                    .catch(error => {
+                        handleAuthError(error);
+                    });
+            } else {
+                // Register logic
+                auth.createUserWithEmailAndPassword(email, password)
+                    .then(({ user }) => {
+                        user.updateProfile({ displayName: username })
+                            .then(() => {
+                                Swal.fire({
+                                    title: 'Pendaftaran Berhasil!',
+                                    text: 'Silakan verifikasi email Anda',
+                                    icon: 'success'
+                                });
+                            });
+                    })
+                    .catch(error => {
+                        handleAuthError(error);
+                    });
+            }
+        });
+
+        function handleAuthError(error) {
+            let message = "";
+            switch(error.code) {
+                case 'auth/email-already-in-use':
+                    message = "Email sudah terdaftar";
+                    break;
+                case 'auth/invalid-email':
+                    message = "Format email tidak valid";
+                    break;
+                case 'auth/weak-password':
+                    message = "Password terlalu lemah";
+                    break;
+                case 'auth/user-not-found':
+                    message = "Akun tidak ditemukan";
+                    break;
+                case 'auth/wrong-password':
+                    message = "Password salah";
+                    break;
+                default:
+                    message = "Terjadi kesalahan, silakan coba lagi";
+            }
+            document.getElementById('error-message').textContent = message;
+        }
+
+        // Check auth state
+        auth.onAuthStateChanged(user => {
+            if(user) {
+                window.location.href = "game.html";
+            }
+        });
+    </script>
 </body>
 </html>
-
