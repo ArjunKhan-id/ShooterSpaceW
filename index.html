@@ -75,6 +75,7 @@
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-analytics-compat.js"></script>
 
 <!-- EmailJS SDK -->
 <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
@@ -100,31 +101,29 @@
 </div>
 
 <script>
-  
-const firebaseConfig = {
-  apiKey: "AIzaSyCLDqFv1kiOFG4xH8XR-lUyW_j-FbBp8aM",
-  authDomain: "shooterspacew.firebaseapp.com",
-  projectId: "shooterspacew",
-  storageBucket: "shooterspacew.firebasestorage.app",
-  messagingSenderId: "780477534762",
-  appId: "1:780477534762:web:26a98d067ebca133e8a953",
-  measurementId: "G-CLTY47FSSZ"
-};
+  // Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyCLDqFv1kiOFG4xH8XR-lUyW_j-FbBp8aM",
+    authDomain: "shooterspacew.firebaseapp.com",
+    projectId: "shooterspacew",
+    storageBucket: "shooterspacew.appspot.com",
+    messagingSenderId: "780477534762",
+    appId: "1:780477534762:web:26a98d067ebca133e8a953",
+    measurementId: "G-CLTY47FSSZ"
+  };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+  // Initialize Firebase
+  const app = firebase.initializeApp(firebaseConfig);
+  const analytics = firebase.analytics();
+  const auth = firebase.auth();
 
-  // EmailJS config (replace with your EmailJS user ID, service ID, and template ID)
+  // EmailJS config
   const EMAILJS_USER_ID = 'blfHFeOa_y4hjwoMX';
   const EMAILJS_SERVICE_ID = 'service_7l7t9mt';
   const EMAILJS_TEMPLATE_ID = 'template_jojz0ij';
 
-  firebase.initializeApp(firebaseConfig);
-  
-  emailjs.init(blfHFeOa_y4hjwoMX);
-
-  const auth = firebase.auth();
+  // Initialize EmailJS
+  emailjs.init(EMAILJS_USER_ID);
 
   const authForm = document.getElementById('auth-form');
   const emailInput = document.getElementById('email');
