@@ -122,54 +122,48 @@
   const EMAILJS_SERVICE_ID = 'service_7l7t9mt';
   const EMAILJS_TEMPLATE_ID = 'template_jojz0ij';
 
-  // Initialize EmailJS with promise to ensure it's ready
-  emailjs.init(EMAILJS_USER_ID).then(() => {
-    console.log('EmailJS initialized successfully');
-  }).catch(err => {
-    console.error('EmailJS initialization error:', err);
-  });
-
-  const authForm = document.getElementById('auth-form');
-  const emailInput = document.getElementById('email');
-  const passwordInput = document.getElementById('password');
-  const btnLogin = document.getElementById('btn-login');
-  const btnSignup = document.getElementById('btn-signup');
-
-  function showAlert(type, message) {
-    Swal.fire({
-      icon: type,
-      title: message,
-      confirmButtonColor: '#3b4ddb',
-      background: '#121926',
-      color: '#e0e7ff',
-      buttonsStyling: true
+  // Initialize EmailJS dengan promise
+  emailjs.init(EMAILJS_USER_ID)
+    .then(() => {
+      console.log('EmailJS initialized successfully');
+    })
+    .catch(error => {
+      console.error('EmailJS initialization failed:', error);
     });
-  }
 
-  function generateOTP() {
-    return Math.floor(100000 + Math.random() * 900000).toString();
+  // Fungsi validasi email
+  function isValidEmail(email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
   }
 
   async function sendOTPEmail(email, otp) {
+    if (!isValidEmail(email)) {
+      throw new Error('Email format is invalid');
+    }
+    
+    const templateParams = {
+      user_email: email,
+      otp_code: otp,
+      game_name: 'SpaceShooter',
+      date: new Date().toLocaleString()
+    };
+
     try {
-      const templateParams = {
-        user_email: email,
-        otp_code: otp,
-        game_name: 'SpaceShooter'
-      };
-      
-      console.log('Sending OTP email with params:', templateParams);
-      
+      console.log('Attempting to send OTP email to:', email);
       const response = await emailjs.send(
         EMAILJS_SERVICE_ID, 
         EMAILJS_TEMPLATE_ID, 
         templateParams
       );
-      
       console.log('EmailJS response:', response);
       return response;
     } catch (error) {
-      console.error('EmailJS send error details:', error);
+      console.error('EmailJS error details:', {
+        status: error.status,
+        text: error.text,
+        stack: error.stack
+      });
       throw error;
     }
   }
@@ -177,77 +171,32 @@
   async function handleSendOTP(email) {
     const otpCode = generateOTP();
     try {
+      showAlert('info', 'Sending OTP to your email...');
+      
       await sendOTPEmail(email, otpCode);
-      // Save OTP & email in session storage for verification page
+      
       sessionStorage.setItem('verificationOTP', otpCode);
       sessionStorage.setItem('verificationEmail', email);
-      showAlert('success', 'OTP sent! Redirecting to email verification...');
+      
+      showAlert('success', 'OTP sent successfully! Redirecting...');
       setTimeout(() => {
         window.location.href = 'verify.html';
       }, 2000);
     } catch (error) {
-      console.error('Full OTP send error:', error);
+      console.error('Full error:', error);
       let errorMessage = 'Failed to send OTP email. Please try again.';
       
-      // More specific error messages
-      if (error.status === 400) {
-        errorMessage = 'Invalid email address. Please check your email.';
-      } else if (error.status === 429) {
-        errorMessage = 'Too many requests. Please wait before trying again.';
+      if (error.text && error.text.includes('quota')) {
+        errorMessage = 'Email quota exceeded. Please try again later.';
+      } else if (error.text) {
+        errorMessage = `Email error: ${error.text}`;
       }
       
       showAlert('error', errorMessage);
     }
   }
 
-  // Rest of your event listeners remain the same
-  authForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    btnLogin.disabled = true;
-    btnSignup.disabled = true;
-    const email = emailInput.value.trim();
-    const password = passwordInput.value;
-
-    try {
-      const userCredential = await auth.signInWithEmailAndPassword(email, password);
-      const user = userCredential.user;
-      if (!user.emailVerified) {
-        await handleSendOTP(email);
-      } else {
-        showAlert('success', 'Login successful! Redirecting...');
-        setTimeout(() => {
-          window.location.href = 'dashboard.html';
-        }, 1500);
-      }
-    } catch (err) {
-      showAlert('error', err.message);
-    }
-    btnLogin.disabled = false;
-    btnSignup.disabled = false;
-  });
-
-  btnSignup.addEventListener('click', async () => {
-    btnLogin.disabled = true;
-    btnSignup.disabled = true;
-
-    const email = emailInput.value.trim();
-    const password = passwordInput.value;
-
-    if (password.length < 6) {
-      showAlert('error', "Password must be at least 6 characters.");
-      btnLogin.disabled = false;
-      btnSignup.disabled = false;
-      return;
-    }
-    try {
-      const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-      await handleSendOTP(email);
-    } catch (err) {
-      showAlert('error', err.message);
-    }
-    btnLogin.disabled = false;
-    btnSignup.disabled = false;
-  });
+  // ... (kode lainnya tetap sama)
 </script>
 </body>
 </html>
