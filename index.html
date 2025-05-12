@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Login - SpaceShooter</title>
+<style>
+  * {margin:0; padding:0; box-sizing:border-box;}
+  html, body {height:100%; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:#0a0f23; color:#e0e7ff;}
+  #app {
+    max-width: 350px;
+    min-height: 600px;
+    margin: 20px auto;
+    padding: 15px;
+    background: #121926;
+    border-radius: 10px;
+    box-shadow: 0 0 15px #1d26a0aa;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  h1 {color:#90a0ff; font-weight:600; text-align:center; margin-bottom:5px;}
+  p.centered {color:#aaa; text-align:center; margin-bottom:20px;}
+  form {display:flex; flex-direction: column;}
+  label {
+    font-weight: 600;
+    color: #7180ff;
+    margin-bottom:4px;
+  }
+  input[type="email"], input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 14px;
+    border-radius: 6px;
+    border: none;
+    background: #2a2f54;
+    color: #cbd5ff;
+    font-size: 16px;
+  }
+  input::placeholder {
+    color: #999fcf;
+  }
+  button {
+    background: #3b4ddb;
+    border: none;
+    color: white;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    margin-top: 8px;
+  }
+  button:hover:not(:disabled) {
+    background: #5c72ff;
+  }
+  button:disabled {
+    background: #3b4ddb80;
+    cursor: not-allowed;
+  }
+  .link-toggle {
+    font-size: 0.9rem;
+    color: #94a1ff;
+    cursor: pointer;
+    text-align: right;
+    margin-top: -10px;
+    margin-bottom: 20px;
+  }
+  .link-toggle:hover {
+    color: #bbc9ff;
+    text-decoration: underline;
+  }
+</style>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+
+<!-- EmailJS SDK -->
+<script src="https://cdn.emailjs.com/dist/email.min.js"></script>
+
+<!-- SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+</head>
+<body>
+<div id="app">
+  <h1>SpaceShooter Login</h1>
+  <p class="centered">Modern & Minimalist</p>
+  <form id="auth-form" aria-label="Login or create account form">
+    <label for="email">Email</label>
+    <input type="email" id="email" placeholder="Your email" required autocomplete="email" />
+    
+    <label for="password">Password</label>
+    <input type="password" id="password" placeholder="Password" required autocomplete="current-password" />
+    
+    <button type="submit" id="btn-login">Login</button>
+    <button type="button" id="btn-signup" style="background:#2d44bb;">Create Account</button>
+  </form>
+</div>
+
+<script>
+  
+const firebaseConfig = {
+  apiKey: "AIzaSyCLDqFv1kiOFG4xH8XR-lUyW_j-FbBp8aM",
+  authDomain: "shooterspacew.firebaseapp.com",
+  projectId: "shooterspacew",
+  storageBucket: "shooterspacew.firebasestorage.app",
+  messagingSenderId: "780477534762",
+  appId: "1:780477534762:web:26a98d067ebca133e8a953",
+  measurementId: "G-CLTY47FSSZ"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+
+  // EmailJS config (replace with your EmailJS user ID, service ID, and template ID)
+  const EMAILJS_USER_ID = 'blfHFeOa_y4hjwoMX';
+  const EMAILJS_SERVICE_ID = 'service_7l7t9mt';
+  const EMAILJS_TEMPLATE_ID = 'template_jojz0ij';
+
+  firebase.initializeApp(firebaseConfig);
+  
+  emailjs.init(blfHFeOa_y4hjwoMX);
+
+  const auth = firebase.auth();
+
+  const authForm = document.getElementById('auth-form');
+  const emailInput = document.getElementById('email');
+  const passwordInput = document.getElementById('password');
+  const btnLogin = document.getElementById('btn-login');
+  const btnSignup = document.getElementById('btn-signup');
+
+  function showAlert(type, message) {
+    Swal.fire({
+      icon: type,
+      title: message,
+      confirmButtonColor: '#3b4ddb',
+      background: '#121926',
+      color: '#e0e7ff',
+      buttonsStyling: true
+    });
+  }
+
+  // Function to generate 6-digit OTP
+  function generateOTP() {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  }
+
+  // Function to send OTP email via EmailJS
+  function sendOTPEmail(email, otp) {
+    const templateParams = {
+      user_email: email,
+      otp_code: otp,
+      game_name: 'SpaceShooter'
+    };
+    return emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
+  }
+
+  // Function to handle sending OTP and redirect to verify page
+  async function handleSendOTP(email) {
+    const otpCode = generateOTP();
+    try {
+      await sendOTPEmail(email, otpCode);
+      // Save OTP & email in session storage for verification page
+      sessionStorage.setItem('verificationOTP', otpCode);
+      sessionStorage.setItem('verificationEmail', email);
+      showAlert('success', 'OTP sent! Redirecting to email verification...');
+      setTimeout(() => {
+        window.location.href = 'verify.html';
+      }, 2000);
+    } catch (error) {
+      console.error('EmailJS send error:', error);
+      showAlert('error', 'Failed to send OTP email. Please try again.');
+    }
+  }
+
+  authForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    btnLogin.disabled = true;
+    btnSignup.disabled = true;
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+
+    try {
+      const userCredential = await auth.signInWithEmailAndPassword(email, password);
+      const user = userCredential.user;
+      if (!user.emailVerified) {
+        await handleSendOTP(email);
+      } else {
+        showAlert('success', 'Login successful! Redirecting...');
+        setTimeout(() => {
+          window.location.href = 'dashboard.html';
+        }, 1500);
+      }
+    } catch (err) {
+      showAlert('error', err.message);
+    }
+    btnLogin.disabled = false;
+    btnSignup.disabled = false;
+  });
+
+  btnSignup.addEventListener('click', async () => {
+    btnLogin.disabled = true;
+    btnSignup.disabled = true;
+
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+
+    if (password.length < 6) {
+      showAlert('error', "Password must be at least 6 characters.");
+      btnLogin.disabled = false;
+      btnSignup.disabled = false;
+      return;
+    }
+    try {
+      const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+      await handleSendOTP(email);
+    } catch (err) {
+      showAlert('error', err.message);
+    }
+    btnLogin.disabled = false;
+    btnSignup.disabled = false;
+  });
+</script>
+</body>
+</html>
