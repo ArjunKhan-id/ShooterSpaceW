@@ -1,41 +1,68 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ShooterSpaceW- Login/Register</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Modern Auth with OTP Verification</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3.2.0/dist/email.min.js"></script>
     <style>
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --secondary: #3f37c9;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --danger: #dc3545;
+            --success: #28a745;
+            --warning: #ffc107;
+        }
+
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
         }
 
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            height: 100vh;
+            background-color: #f5f7ff;
             display: flex;
             justify-content: center;
             align-items: center;
+            min-height: 100vh;
+            color: var(--dark);
         }
 
         .auth-container {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 2rem;
-            border-radius: 20px;
-            width: 400px;
-            max-width: 90%;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            padding: 2.5rem;
+            transition: all 0.3s ease;
         }
 
-        h2 {
-            color: white;
+        .auth-header {
             text-align: center;
-            margin-bottom: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .auth-header h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .auth-header p {
+            color: var(--gray);
+            font-size: 0.9rem;
         }
 
         .form-group {
@@ -43,420 +70,825 @@
             position: relative;
         }
 
-        label {
+        .form-group label {
             display: block;
-            color: white;
             margin-bottom: 0.5rem;
             font-weight: 500;
+            font-size: 0.9rem;
         }
 
-        input {
+        .form-control {
             width: 100%;
-            padding: 12px;
+            padding: 0.8rem 1rem;
+            border: 1px solid #e0e0e0;
             border-radius: 8px;
-            border: 2px solid rgba(255,255,255,0.2);
-            background: rgba(255,255,255,0.1);
-            color: white;
-            font-size: 1rem;
+            font-size: 0.95rem;
+            transition: all 0.3s;
         }
 
-        input::placeholder {
-            color: rgba(255,255,255,0.7);
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
         }
 
-        .password-toggle {
+        .password-input-container {
+            position: relative;
+        }
+
+        .toggle-password {
             position: absolute;
-            right: 15px;
-            top: 38px;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
             cursor: pointer;
-            color: rgba(255,255,255,0.7);
+            color: var(--gray);
         }
 
-        button {
+        .btn {
             width: 100%;
-            padding: 12px;
-            background: #6c63ff;
-            color: white;
+            padding: 0.9rem;
             border: none;
             border-radius: 8px;
             font-size: 1rem;
-            font-weight: 600;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.3s;
         }
 
-        button:hover {
-            background: #5248cc;
-        }
-
-        .switch-form {
-            text-align: center;
-            margin-top: 1rem;
+        .btn-primary {
+            background-color: var(--primary);
             color: white;
         }
 
-        .switch-form a {
-            color: #d3cfff;
-            cursor: pointer;
-            text-decoration: underline;
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
         }
 
-        #error-message {
-            color: #ff6b6b;
+        .btn-secondary {
+            background-color: white;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background-color: #f5f7ff;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 1.5rem 0;
+            color: var(--gray);
+            font-size: 0.8rem;
+        }
+
+        .divider::before, .divider::after {
+            content: "";
+            flex: 1;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .divider::before {
+            margin-right: 1rem;
+        }
+
+        .divider::after {
+            margin-left: 1rem;
+        }
+
+        .footer-text {
             text-align: center;
-            margin: 1rem 0;
+            margin-top: 1.5rem;
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+
+        .footer-text a {
+            color: var(--primary);
+            text-decoration: none;
             font-weight: 500;
         }
 
-        /* OTP Verification Modal */
-        .otp-modal {
+        .footer-text a:hover {
+            text-decoration: underline;
+        }
+
+        .alert {
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
             display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
         }
 
-        .otp-content {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 2rem;
-            border-radius: 20px;
-            width: 400px;
-            max-width: 90%;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        .alert-danger {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(220, 53, 69, 0.2);
+        }
+
+        .alert-success {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(40, 167, 69, 0.2);
+        }
+
+        .alert-warning {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: var(--warning);
+            border: 1px solid rgba(255, 193, 7, 0.2);
+        }
+
+        .verification-section {
+            display: none;
+            margin-top: 1.5rem;
+        }
+
+        .resend-link {
+            font-size: 0.85rem;
+            color: var(--primary);
+            cursor: pointer;
             text-align: center;
+            margin-top: 1rem;
+            display: block;
         }
 
-        .otp-content h2 {
-            color: white;
-            margin-bottom: 1rem;
+        .resend-link:hover {
+            text-decoration: underline;
         }
 
-        .otp-content p {
-            color: white;
-            margin-bottom: 1.5rem;
+        /* Toggle between login and signup */
+        #signupForm, #otpForm {
+            display: none;
         }
 
-        .otp-inputs {
+        .password-strength {
+            height: 4px;
+            background: #e0e0e0;
+            border-radius: 2px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .password-strength-bar {
+            height: 100%;
+            width: 0%;
+            background: var(--danger);
+            transition: width 0.3s;
+        }
+
+        /* OTP Input Styles */
+        .otp-container {
             display: flex;
-            justify-content: center;
-            gap: 10px;
+            justify-content: space-between;
             margin-bottom: 1.5rem;
         }
 
-        .otp-inputs input {
-            width: 40px;
-            height: 40px;
+        .otp-input {
+            width: 50px;
+            height: 50px;
             text-align: center;
             font-size: 1.2rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            transition: all 0.3s;
         }
 
-        .resend-otp {
-            color: #d3cfff;
-            cursor: pointer;
+        .otp-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+
+        .timer {
+            text-align: center;
             margin-top: 1rem;
-            display: inline-block;
-        }
-
-        .resend-otp:hover {
-            text-decoration: underline;
+            font-size: 0.9rem;
+            color: var(--gray);
         }
     </style>
 </head>
 <body>
     <div class="auth-container">
-        <h2 id="form-title">Daftar Akun Baru</h2>
-        <div id="error-message"></div>
-        
-        <form id="auth-form">
-            <div class="form-group" id="username-group">
-                <label for="username">Nama Pengguna</label>
-                <input type="text" id="username" required>
+        <!-- Login Form -->
+        <form id="loginForm">
+            <div class="auth-header">
+                <h1>Welcome Back</h1>
+                <p>Please enter your credentials to login</p>
             </div>
-            
+
+            <div id="login-error-alert" class="alert alert-danger"></div>
+            <div id="login-success-alert" class="alert alert-success"></div>
+
             <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" required>
+                <label for="login-email">Email Address</label>
+                <input type="email" id="login-email" class="form-control" placeholder="Enter your email" required>
             </div>
-            
             <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" required>
-                <i class="fas fa-eye password-toggle" onclick="togglePassword()"></i>
+                <label for="login-password">Password</label>
+                <div class="password-input-container">
+                    <input type="password" id="login-password" class="form-control" placeholder="Enter your password" required>
+                    <i class="toggle-password fas fa-eye" id="toggleLoginPassword"></i>
+                </div>
             </div>
-            
-            <button type="submit" id="submit-btn">Daftar</button>
+            <button type="submit" class="btn btn-primary" id="loginBtn">Login</button>
+
+            <div class="verification-section" id="loginVerificationSection">
+                <div class="divider">OR</div>
+                <button type="button" class="btn btn-primary" id="sendVerificationBtn">Send Verification Email</button>
+                <span class="resend-link" id="resendLink">Resend verification email</span>
+            </div>
+
+            <p class="footer-text">Don't have an account? <a href="#" id="showSignup">Sign up</a></p>
+            <p class="footer-text">Forgot password? <a href="#" id="showOTP">Login with OTP</a></p>
         </form>
-        
-        <div class="switch-form">
-            Sudah punya akun? <a onclick="switchForm()">Masuk disini</a>
-        </div>
-    </div>
 
-    <!-- OTP Verification Modal -->
-    <div class="otp-modal" id="otp-modal">
-        <div class="otp-content">
-            <h2>Verifikasi Email</h2>
-            <p>Kami telah mengirim kode OTP ke email Anda. Silakan masukkan kode tersebut di bawah ini.</p>
-            
-            <div class="otp-inputs">
-                <input type="text" maxlength="1" class="otp-input">
-                <input type="text" maxlength="1" class="otp-input">
-                <input type="text" maxlength="1" class="otp-input">
-                <input type="text" maxlength="1" class="otp-input">
-                <input type="text" maxlength="1" class="otp-input">
-                <input type="text" maxlength="1" class="otp-input">
+        <!-- Signup Form -->
+        <form id="signupForm">
+            <div class="auth-header">
+                <h1>Create Account</h1>
+                <p>Fill in your details to get started</p>
             </div>
-            
-            <button id="verify-otp-btn">Verifikasi</button>
-            <div class="resend-otp" id="resend-otp">Kirim ulang OTP</div>
-        </div>
-    </div>
 
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+            <div id="signup-error-alert" class="alert alert-danger"></div>
+            <div id="signup-success-alert" class="alert alert-success"></div>
+
+            <div class="form-group">
+                <label for="signup-name">Full Name</label>
+                <input type="text" id="signup-name" class="form-control" placeholder="Enter your full name" required>
+            </div>
+            <div class="form-group">
+                <label for="signup-email">Email Address</label>
+                <input type="email" id="signup-email" class="form-control" placeholder="Enter your email" required>
+            </div>
+            <div class="form-group">
+                <label for="signup-password">Password</label>
+                <div class="password-input-container">
+                    <input type="password" id="signup-password" class="form-control" placeholder="Create a password" required>
+                    <i class="toggle-password fas fa-eye" id="toggleSignupPassword"></i>
+                </div>
+                <div class="password-strength">
+                    <div class="password-strength-bar" id="passwordStrengthBar"></div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="signup-confirm-password">Confirm Password</label>
+                <div class="password-input-container">
+                    <input type="password" id="signup-confirm-password" class="form-control" placeholder="Confirm your password" required>
+                    <i class="toggle-password fas fa-eye" id="toggleConfirmPassword"></i>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary" id="signupBtn">Sign Up</button>
+
+            <p class="footer-text">Already have an account? <a href="#" id="showLogin">Login</a></p>
+        </form>
+
+        <!-- OTP Login Form -->
+        <form id="otpForm">
+            <div class="auth-header">
+                <h1>OTP Verification</h1>
+                <p>We'll send a one-time password to your email</p>
+            </div>
+
+            <div id="otp-error-alert" class="alert alert-danger"></div>
+            <div id="otp-success-alert" class="alert alert-success"></div>
+            <div id="otp-warning-alert" class="alert alert-warning"></div>
+
+            <div class="form-group" id="otpEmailGroup">
+                <label for="otp-email">Email Address</label>
+                <input type="email" id="otp-email" class="form-control" placeholder="Enter your email" required>
+            </div>
+
+            <div id="otpCodeGroup" style="display: none;">
+                <div class="form-group">
+                    <label>Enter 6-digit OTP</label>
+                    <div class="otp-container">
+                        <input type="text" class="otp-input" maxlength="1" data-index="1">
+                        <input type="text" class="otp-input" maxlength="1" data-index="2">
+                        <input type="text" class="otp-input" maxlength="1" data-index="3">
+                        <input type="text" class="otp-input" maxlength="1" data-index="4">
+                        <input type="text" class="otp-input" maxlength="1" data-index="5">
+                        <input type="text" class="otp-input" maxlength="1" data-index="6">
+                    </div>
+                    <p class="timer" id="otpTimer">OTP expires in: 05:00</p>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="otpSubmitBtn">Send OTP</button>
+            <button type="button" class="btn btn-secondary" id="verifyOtpBtn" style="display: none;">Verify OTP</button>
+
+            <p class="footer-text">Back to <a href="#" id="showLoginFromOTP">Login</a></p>
+        </form>
+    </div>
 
     <script>
         // Initialize Firebase
         const firebaseConfig = {
-  apiKey: "AIzaSyCLDqFv1kiOFG4xH8XR-lUyW_j-FbBp8aM",
-  authDomain: "shooterspacew.firebaseapp.com",
-  databaseURL: "https://shooterspacew-default-rtdb.firebaseio.com",
-  projectId: "shooterspacew",
-  storageBucket: "shooterspacew.firebasestorage.app",
-  messagingSenderId: "780477534762",
-  appId: "1:780477534762:web:26a98d067ebca133e8a953",
-  measurementId: "G-CLTY47FSSZ"
-};
+            apiKey: "AIzaSyCLDqFv1kiOFG4xH8XR-lUyW_j-FbBp8aM",
+            authDomain: "shooterspacew.firebaseapp.com",
+            databaseURL: "https://shooterspacew-default-rtdb.firebaseio.com",
+            projectId: "shooterspacew",
+            storageBucket: "shooterspacew.firebasestorage.app",
+            messagingSenderId: "780477534762",
+            appId: "1:780477534762:web:26a98d067ebca133e8a953",
+            measurementId: "G-CLTY47FSSZ"
+        };
 
+        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
 
         // Initialize EmailJS
-        (function() {
-            emailjs.init("blfHFeOa_y4hjwoMX"); // Ganti dengan EmailJS User ID Anda
-        })();
+        emailjs.init("ZMLQ7jZCVJi1ssffU");
 
-        let isLogin = false;
-        let otpCode = "";
-        let verificationEmail = "";
-        let verificationUsername = "";
-
-        function switchForm() {
-            isLogin = !isLogin;
-            const title = document.getElementById('form-title');
-            const submitBtn = document.getElementById('submit-btn');
-            const usernameGroup = document.getElementById('username-group');
-            const switchLink = document.querySelector('.switch-form a');
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const loginForm = document.getElementById('loginForm');
+            const signupForm = document.getElementById('signupForm');
+            const otpForm = document.getElementById('otpForm');
             
-            if(isLogin) {
-                title.textContent = "Masuk ke Akun Anda";
-                submitBtn.textContent = "Masuk";
-                usernameGroup.style.display = 'none';
-                switchLink.previousSibling.textContent = "Belum punya akun? ";
-                switchLink.textContent = "Daftar disini";
-            } else {
-                title.textContent = "Daftar Akun Baru";
-                submitBtn.textContent = "Daftar";
-                usernameGroup.style.display = 'block';
-                switchLink.previousSibling.textContent = "Sudah punya akun? ";
-                switchLink.textContent = "Masuk disini";
-            }
-        }
-
-        function togglePassword() {
-            const passwordField = document.getElementById('password');
-            const toggleIcon = document.querySelector('.password-toggle');
+            const showSignup = document.getElementById('showSignup');
+            const showLogin = document.getElementById('showLogin');
+            const showOTP = document.getElementById('showOTP');
+            const showLoginFromOTP = document.getElementById('showLoginFromOTP');
             
-            if(passwordField.type === "password") {
-                passwordField.type = "text";
-                toggleIcon.classList.replace('fa-eye', 'fa-eye-slash');
-            } else {
-                passwordField.type = "password";
-                toggleIcon.classList.replace('fa-eye-slash', 'fa-eye');
-            }
-        }
-
-        function generateOTP() {
-            return Math.floor(100000 + Math.random() * 900000).toString();
-        }
-
-        function sendOTP(email, username) {
-            otpCode = generateOTP();
-            verificationEmail = email;
-            verificationUsername = username;
-
-            const templateParams = {
-                to_email: email,
-                to_name: username,
-                otp_code: otpCode
-            };
-
-            emailjs.send('service_7l7t9mt', 'template_x6bj9ro', templateParams)
-                .then(function(response) {
-                    console.log('OTP sent successfully', response);
-                    showOTPModal();
-                }, function(error) {
-                    console.error('Failed to send OTP', error);
-                    Swal.fire({
-                        title: 'Gagal mengirim OTP',
-                        text: 'Silakan coba lagi nanti',
-                        icon: 'error'
-                    });
-                });
-        }
-
-        function showOTPModal() {
-            const modal = document.getElementById('otp-modal');
-            modal.style.display = 'flex';
+            // Login elements
+            const loginEmail = document.getElementById('login-email');
+            const loginPassword = document.getElementById('login-password');
+            const toggleLoginPassword = document.getElementById('toggleLoginPassword');
+            const loginErrorAlert = document.getElementById('login-error-alert');
+            const loginSuccessAlert = document.getElementById('login-success-alert');
+            const loginVerificationSection = document.getElementById('loginVerificationSection');
+            const sendVerificationBtn = document.getElementById('sendVerificationBtn');
+            const resendLink = document.getElementById('resendLink');
+            const loginBtn = document.getElementById('loginBtn');
             
-            // Focus first OTP input
+            // Signup elements
+            const signupName = document.getElementById('signup-name');
+            const signupEmail = document.getElementById('signup-email');
+            const signupPassword = document.getElementById('signup-password');
+            const toggleSignupPassword = document.getElementById('toggleSignupPassword');
+            const signupConfirmPassword = document.getElementById('signup-confirm-password');
+            const toggleConfirmPassword = document.getElementById('toggleConfirmPassword');
+            const signupErrorAlert = document.getElementById('signup-error-alert');
+            const signupSuccessAlert = document.getElementById('signup-success-alert');
+            const signupBtn = document.getElementById('signupBtn');
+            const passwordStrengthBar = document.getElementById('passwordStrengthBar');
+            
+            // OTP elements
+            const otpEmail = document.getElementById('otp-email');
+            const otpEmailGroup = document.getElementById('otpEmailGroup');
+            const otpCodeGroup = document.getElementById('otpCodeGroup');
             const otpInputs = document.querySelectorAll('.otp-input');
-            otpInputs[0].focus();
+            const otpSubmitBtn = document.getElementById('otpSubmitBtn');
+            const verifyOtpBtn = document.getElementById('verifyOtpBtn');
+            const otpErrorAlert = document.getElementById('otp-error-alert');
+            const otpSuccessAlert = document.getElementById('otp-success-alert');
+            const otpWarningAlert = document.getElementById('otp-warning-alert');
+            const otpTimer = document.getElementById('otpTimer');
             
-            // Auto-tab between OTP inputs
+            let currentUser = null;
+            let otpCode = '';
+            let otpExpiryTime = 0;
+            let otpTimerInterval = null;
+
+            // Toggle between forms
+            showSignup.addEventListener('click', function(e) {
+                e.preventDefault();
+                hideAllForms();
+                signupForm.style.display = 'block';
+            });
+
+            showLogin.addEventListener('click', function(e) {
+                e.preventDefault();
+                hideAllForms();
+                loginForm.style.display = 'block';
+            });
+
+            showOTP.addEventListener('click', function(e) {
+                e.preventDefault();
+                hideAllForms();
+                otpForm.style.display = 'block';
+                resetOTPForm();
+            });
+
+            showLoginFromOTP.addEventListener('click', function(e) {
+                e.preventDefault();
+                hideAllForms();
+                loginForm.style.display = 'block';
+            });
+
+            function hideAllForms() {
+                loginForm.style.display = 'none';
+                signupForm.style.display = 'none';
+                otpForm.style.display = 'none';
+            }
+
+            // Toggle password visibility
+            toggleLoginPassword.addEventListener('click', function() {
+                togglePasswordVisibility(loginPassword, toggleLoginPassword);
+            });
+
+            toggleSignupPassword.addEventListener('click', function() {
+                togglePasswordVisibility(signupPassword, toggleSignupPassword);
+            });
+
+            toggleConfirmPassword.addEventListener('click', function() {
+                togglePasswordVisibility(signupConfirmPassword, toggleConfirmPassword);
+            });
+
+            function togglePasswordVisibility(input, icon) {
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    input.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            }
+
+            // Password strength indicator
+            signupPassword.addEventListener('input', function() {
+                updatePasswordStrength(signupPassword.value);
+            });
+
+            function updatePasswordStrength(password) {
+                let strength = 0;
+                
+                if (password.length > 0) strength += 20;
+                if (password.length >= 8) strength += 20;
+                if (/[A-Z]/.test(password)) strength += 20;
+                if (/[0-9]/.test(password)) strength += 20;
+                if (/[^A-Za-z0-9]/.test(password)) strength += 20;
+                
+                passwordStrengthBar.style.width = strength + '%';
+                
+                if (strength < 40) {
+                    passwordStrengthBar.style.backgroundColor = 'var(--danger)';
+                } else if (strength < 80) {
+                    passwordStrengthBar.style.backgroundColor = 'orange';
+                } else {
+                    passwordStrengthBar.style.backgroundColor = 'var(--success)';
+                }
+            }
+
+            // Handle login form submission
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                loginBtn.disabled = true;
+                loginBtn.textContent = 'Logging in...';
+                
+                const email = loginEmail.value;
+                const password = loginPassword.value;
+                
+                auth.signInWithEmailAndPassword(email, password)
+                    .then((userCredential) => {
+                        currentUser = userCredential.user;
+                        
+                        if (!currentUser.emailVerified) {
+                            // Show verification section if email not verified
+                            showAlert(loginSuccessAlert, 'Please verify your email address to complete login.');
+                            loginVerificationSection.style.display = 'block';
+                            loginBtn.disabled = false;
+                            loginBtn.textContent = 'Login';
+                        } else {
+                            // User is logged in and verified
+                            showAlert(loginSuccessAlert, 'Login successful! Redirecting...');
+                            // Redirect to dashboard or home page
+                            setTimeout(() => {
+                                window.location.href = '/dashboard.html';
+                            }, 1500);
+                        }
+                    })
+                    .catch((error) => {
+                        loginBtn.disabled = false;
+                        loginBtn.textContent = 'Login';
+                        
+                        // Handle different Firebase errors
+                        switch (error.code) {
+                            case 'auth/user-not-found':
+                                showAlert(loginErrorAlert, 'No user found with this email address.');
+                                break;
+                            case 'auth/wrong-password':
+                                showAlert(loginErrorAlert, 'Incorrect password. Please try again.');
+                                break;
+                            case 'auth/invalid-email':
+                                showAlert(loginErrorAlert, 'Please enter a valid email address.');
+                                break;
+                            default:
+                                showAlert(loginErrorAlert, error.message);
+                        }
+                    });
+            });
+
+            // Handle signup form submission
+            signupForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const name = signupName.value;
+                const email = signupEmail.value;
+                const password = signupPassword.value;
+                const confirmPassword = signupConfirmPassword.value;
+                
+                // Validate passwords match
+                if (password !== confirmPassword) {
+                    showAlert(signupErrorAlert, 'Passwords do not match.');
+                    return;
+                }
+                
+                // Validate password strength
+                if (password.length < 8) {
+                    showAlert(signupErrorAlert, 'Password must be at least 8 characters long.');
+                    return;
+                }
+                
+                signupBtn.disabled = true;
+                signupBtn.textContent = 'Creating account...';
+                
+                // Create user with Firebase
+                auth.createUserWithEmailAndPassword(email, password)
+                    .then((userCredential) => {
+                        currentUser = userCredential.user;
+                        
+                        // Update user display name
+                        return currentUser.updateProfile({
+                            displayName: name
+                        });
+                    })
+                    .then(() => {
+                        // Send verification email
+                        return sendVerificationEmail(currentUser, 'signup');
+                    })
+                    .then(() => {
+                        showAlert(signupSuccessAlert, 'Account created successfully! Verification email sent. Please check your inbox.');
+                        signupBtn.disabled = false;
+                        signupBtn.textContent = 'Sign Up';
+                        
+                        // Switch to login form after successful signup
+                        setTimeout(() => {
+                            signupForm.style.display = 'none';
+                            loginForm.style.display = 'block';
+                            loginEmail.value = email;
+                            loginPassword.value = '';
+                        }, 3000);
+                    })
+                    .catch((error) => {
+                        signupBtn.disabled = false;
+                        signupBtn.textContent = 'Sign Up';
+                        
+                        // Handle different Firebase errors
+                        switch (error.code) {
+                            case 'auth/email-already-in-use':
+                                showAlert(signupErrorAlert, 'Email already in use. Please login instead.');
+                                break;
+                            case 'auth/invalid-email':
+                                showAlert(signupErrorAlert, 'Please enter a valid email address.');
+                                break;
+                            case 'auth/weak-password':
+                                showAlert(signupErrorAlert, 'Password should be at least 6 characters.');
+                                break;
+                            default:
+                                showAlert(signupErrorAlert, error.message);
+                        }
+                    });
+            });
+
+            // Handle OTP form submission
+            otpForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const email = otpEmail.value;
+                
+                if (!otpCodeGroup.style.display || otpCodeGroup.style.display === 'none') {
+                    // First step - request OTP
+                    otpSubmitBtn.disabled = true;
+                    otpSubmitBtn.textContent = 'Sending OTP...';
+                    
+                    // Generate 6-digit OTP
+                    otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+                    otpExpiryTime = Date.now() + 5 * 60 * 1000; // 5 minutes from now
+                    
+                    // Send OTP via EmailJS
+                    const templateParams = {
+                        to_email: email,
+                        otp_code: otpCode
+                    };
+
+                    emailjs.send('service_8fsbu8n', 'template_g46cxyi', templateParams)
+                        .then(() => {
+                            showAlert(otpSuccessAlert, 'OTP sent successfully! Please check your email.');
+                            
+                            // Show OTP input fields
+                            otpEmailGroup.style.display = 'none';
+                            otpCodeGroup.style.display = 'block';
+                            otpSubmitBtn.style.display = 'none';
+                            verifyOtpBtn.style.display = 'block';
+                            
+                            // Start timer
+                            startOTPTimer();
+                            
+                            otpSubmitBtn.disabled = false;
+                            otpSubmitBtn.textContent = 'Send OTP';
+                        })
+                        .catch((error) => {
+                            showAlert(otpErrorAlert, 'Failed to send OTP: ' + error.message);
+                            otpSubmitBtn.disabled = false;
+                            otpSubmitBtn.textContent = 'Send OTP';
+                        });
+                }
+            });
+
+            // Handle OTP verification
+            verifyOtpBtn.addEventListener('click', function() {
+                const enteredOtp = Array.from(otpInputs).map(input => input.value).join('');
+                
+                if (enteredOtp.length !== 6) {
+                    showAlert(otpErrorAlert, 'Please enter a complete 6-digit OTP.');
+                    return;
+                }
+                
+                if (enteredOtp !== otpCode) {
+                    showAlert(otpErrorAlert, 'Invalid OTP. Please try again.');
+                    return;
+                }
+                
+                if (Date.now() > otpExpiryTime) {
+                    showAlert(otpErrorAlert, 'OTP has expired. Please request a new one.');
+                    return;
+                }
+                
+                verifyOtpBtn.disabled = true;
+                verifyOtpBtn.textContent = 'Verifying...';
+                
+                // In a real app, you would verify the OTP with your backend
+                // For this demo, we'll just sign in the user with email/password if they exist
+                const email = otpEmail.value;
+                
+                // Check if user exists
+                auth.fetchSignInMethodsForEmail(email)
+                    .then((providers) => {
+                        if (providers.length > 0) {
+                            // User exists - show password field or auto-login if possible
+                            showAlert(otpSuccessAlert, 'OTP verified successfully! Redirecting...');
+                            
+                            // In a real app, you would complete the login process here
+                            setTimeout(() => {
+                                window.location.href = '/dashboard.html';
+                            }, 1500);
+                        } else {
+                            // User doesn't exist - prompt to sign up
+                            hideAllForms();
+                            signupForm.style.display = 'block';
+                            signupEmail.value = email;
+                            showAlert(signupSuccessAlert, 'OTP verified! Please complete your registration.');
+                        }
+                    })
+                    .catch((error) => {
+                        showAlert(otpErrorAlert, 'Error: ' + error.message);
+                        verifyOtpBtn.disabled = false;
+                        verifyOtpBtn.textContent = 'Verify OTP';
+                    });
+            });
+
+            // OTP input navigation
             otpInputs.forEach((input, index) => {
-                input.addEventListener('input', () => {
-                    if (input.value.length === 1 && index < otpInputs.length - 1) {
-                        otpInputs[index + 1].focus();
+                input.addEventListener('input', (e) => {
+                    if (e.target.value.length === 1) {
+                        if (index < otpInputs.length - 1) {
+                            otpInputs[index + 1].focus();
+                        }
                     }
                 });
                 
                 input.addEventListener('keydown', (e) => {
-                    if (e.key === 'Backspace' && input.value.length === 0 && index > 0) {
-                        otpInputs[index - 1].focus();
+                    if (e.key === 'Backspace' && e.target.value.length === 0) {
+                        if (index > 0) {
+                            otpInputs[index - 1].focus();
+                        }
                     }
                 });
             });
-        }
 
-        function hideOTPModal() {
-            document.getElementById('otp-modal').style.display = 'none';
-        }
+            function startOTPTimer() {
+                clearInterval(otpTimerInterval);
+                
+                function updateTimer() {
+                    const now = Date.now();
+                    const remaining = Math.max(0, otpExpiryTime - now);
+                    
+                    if (remaining <= 0) {
+                        clearInterval(otpTimerInterval);
+                        otpTimer.textContent = 'OTP expired';
+                        showAlert(otpWarningAlert, 'OTP has expired. Please request a new one.');
+                        return;
+                    }
+                    
+                    const minutes = Math.floor(remaining / 60000);
+                    const seconds = Math.floor((remaining % 60000) / 1000);
+                    
+                    otpTimer.textContent = `OTP expires in: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }
+                
+                updateTimer();
+                otpTimerInterval = setInterval(updateTimer, 1000);
+            }
 
-        function verifyOTP() {
-            const otpInputs = document.querySelectorAll('.otp-input');
-            let enteredOTP = '';
-            
-            otpInputs.forEach(input => {
-                enteredOTP += input.value;
+            function resetOTPForm() {
+                otpCode = '';
+                otpEmailGroup.style.display = 'block';
+                otpCodeGroup.style.display = 'none';
+                otpSubmitBtn.style.display = 'block';
+                verifyOtpBtn.style.display = 'none';
+                otpSubmitBtn.disabled = false;
+                otpSubmitBtn.textContent = 'Send OTP';
+                verifyOtpBtn.disabled = false;
+                verifyOtpBtn.textContent = 'Verify OTP';
+                otpInputs.forEach(input => input.value = '');
+                clearInterval(otpTimerInterval);
+                otpTimer.textContent = 'OTP expires in: 05:00';
+            }
+
+            // Handle send verification email
+            sendVerificationBtn.addEventListener('click', function() {
+                if (currentUser) {
+                    sendVerificationEmail(currentUser, 'login');
+                }
             });
-            
-            if (enteredOTP === otpCode) {
-                // OTP verified, create user account
-                auth.createUserWithEmailAndPassword(verificationEmail, document.getElementById('password').value)
-                    .then(({ user }) => {
-                        return user.updateProfile({ displayName: verificationUsername });
+
+            // Handle resend verification link
+            resendLink.addEventListener('click', function() {
+                if (currentUser) {
+                    sendVerificationEmail(currentUser, 'login');
+                }
+            });
+
+            // Function to send verification email
+            function sendVerificationEmail(user, formType) {
+                const btn = formType === 'login' ? sendVerificationBtn : signupBtn;
+                const successAlert = formType === 'login' ? loginSuccessAlert : signupSuccessAlert;
+                
+                if (formType === 'login') {
+                    btn.disabled = true;
+                    btn.textContent = 'Sending...';
+                }
+                
+                // Send verification email via Firebase
+                user.sendEmailVerification()
+                    .then(() => {
+                        // Also send via EmailJS for better deliverability
+                        const templateParams = {
+                            to_name: user.displayName || 'User',
+                            to_email: user.email,
+                            verification_link: `https://shooterspacew.firebaseapp.com/__/auth/action?mode=verifyEmail&oobCode=${user.uid}&apiKey=${firebaseConfig.apiKey}&lang=en`
+                        };
+
+                        return emailjs.send('service_8fsbu8n', 'template_g46cxyi', templateParams);
                     })
                     .then(() => {
-                        hideOTPModal();
-                        Swal.fire({
-                            title: 'Verifikasi Berhasil!',
-                            text: 'Akun Anda telah berhasil dibuat',
-                            icon: 'success'
-                        }).then(() => {
-                            window.location.href = "dashboard.html";
-                        });
+                        showAlert(successAlert, 'Verification email sent successfully! Please check your inbox.');
+                        if (formType === 'login') {
+                            btn.disabled = false;
+                            btn.textContent = 'Send Verification Email';
+                        }
                     })
-                    .catch(error => {
-                        handleAuthError(error);
-                        hideOTPModal();
+                    .catch((error) => {
+                        showAlert(formType === 'login' ? loginErrorAlert : signupErrorAlert, 
+                                 'Error sending verification email: ' + error.message);
+                        if (formType === 'login') {
+                            btn.disabled = false;
+                            btn.textContent = 'Send Verification Email';
+                        }
                     });
-            } else {
-                Swal.fire({
-                    title: 'Kode OTP Salah',
-                    text: 'Silakan coba lagi',
-                    icon: 'error'
+            }
+
+            // Function to show alert messages
+            function showAlert(alertElement, message) {
+                // Hide all alerts first
+                document.querySelectorAll('.alert').forEach(alert => {
+                    alert.style.display = 'none';
                 });
-            }
-        }
-
-        document.getElementById('auth-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const username = isLogin ? null : document.getElementById('username').value;
-            const errorMessage = document.getElementById('error-message');
-
-            errorMessage.textContent = "";
-
-            if(!isLogin && !username) {
-                errorMessage.textContent = "Nama pengguna harus diisi";
-                return;
+                
+                alertElement.textContent = message;
+                alertElement.style.display = 'block';
+                
+                // Auto hide after 5 seconds (except for success messages that should stay)
+                if (!alertElement.classList.contains('alert-success')) {
+                    setTimeout(() => {
+                        alertElement.style.display = 'none';
+                    }, 5000);
+                }
             }
 
-            if(password.length < 6) {
-                errorMessage.textContent = "Password minimal 6 karakter";
-                return;
-            }
-
-            if(isLogin) {
-                // Login logic
-                auth.signInWithEmailAndPassword(email, password)
-                    .then(() => {
-                        window.location.href = "dashboard.html"; // Redirect ke game
-                    })
-                    .catch(error => {
-                        handleAuthError(error);
-                    });
-            } else {
-                // Register logic - send OTP first
-                sendOTP(email, username);
-            }
-        });
-
-        // OTP Verification Button
-        document.getElementById('verify-otp-btn').addEventListener('click', verifyOTP);
-        
-        // Resend OTP Button
-        document.getElementById('resend-otp').addEventListener('click', () => {
-            sendOTP(verificationEmail, verificationUsername);
-            Swal.fire({
-                title: 'OTP Dikirim Ulang',
-                text: 'Kode OTP baru telah dikirim ke email Anda',
-                icon: 'success'
+            // Check if user is already logged in
+            auth.onAuthStateChanged((user) => {
+                if (user && user.emailVerified) {
+                    window.location.href = '/dashboard.html';
+                }
             });
-        });
-
-        function handleAuthError(error) {
-            let message = "";
-            switch(error.code) {
-                case 'auth/email-already-in-use':
-                    message = "Email sudah terdaftar";
-                    break;
-                case 'auth/invalid-email':
-                    message = "Format email tidak valid";
-                    break;
-                case 'auth/weak-password':
-                    message = "Password terlalu lemah";
-                    break;
-                case 'auth/user-not-found':
-                    message = "Akun tidak ditemukan";
-                    break;
-                case 'auth/wrong-password':
-                    message = "Password salah";
-                    break;
-                default:
-                    message = "Terjadi kesalahan, silakan coba lagi";
-            }
-            document.getElementById('error-message').textContent = message;
-        }
-
-        // Check auth state
-        auth.onAuthStateChanged(user => {
-            if(user && window.location.pathname.endsWith('index.html')) {
-                window.location.href = "dashboard.html";
-            }
         });
     </script>
 </body>
-</html> 
+</html>
