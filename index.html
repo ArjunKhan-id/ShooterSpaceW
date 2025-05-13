@@ -443,7 +443,7 @@
                         } else {
                             showAlert(loginSuccess, 'Login successful! Redirecting...');
                             setTimeout(() => {
-                                window.location.href = '/dashboard.html';
+                                window.location.href = 'dashboard.html';
                             }, 1500);
                         }
                     })
@@ -573,7 +573,7 @@
                             // User exists - show success
                             showAlert(otpSuccess, 'OTP verified! Redirecting...');
                             setTimeout(() => {
-                                window.location.href = '/dashboard.html';
+                                window.location.href = 'dashboard.html';
                             }, 1500);
                         } else {
                             // User doesn't exist - prompt to sign up
@@ -682,7 +682,7 @@
             // Check if user is already logged in
             auth.onAuthStateChanged((user) => {
                 if (user && user.emailVerified) {
-                    window.location.href = '/dashboard.html';
+                    window.location.href = 'dashboard.html';
                 }
             });
         });
