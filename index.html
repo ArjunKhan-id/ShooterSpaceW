@@ -459,7 +459,17 @@
 
   toggleFormBtn.click();  // initialize in register mode
 
-window.location.href = 'dashboard.html'
+</script>
+<script>
+  const form = document.getElementById('loginForm');
+
+  form.addEventListener('submit', function(e) {
+    e.preventDefault(); // Biar nggak reload dulu
+
+    // logika login, misalnya validasi Firebase, dll
+    // kalau sukses:
+    window.location.href = 'dashboard.html';
+  });
 </script>
 
 </body>
