@@ -111,19 +111,7 @@
     padding: 10px;
     font-size: 0.9rem;
   }
-  #message {
-    font-size: 0.9rem;
-    height: 20px;
-    text-align: center;
-    margin-bottom: 12px;
-    min-height: 24px;
-  }
-  #message.success {
-    color: #70f5c7;
-  }
-  #message.error {
-    color: #ff6f6f;
-  }
+
   @media (max-width: 400px) {
     #container {
       width: 95vw;
@@ -132,6 +120,8 @@
     }
   }
 </style>
+<!-- SweetAlert2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet"/>
 </head>
 <body>
 
@@ -156,7 +146,6 @@
     <label for="password">Password</label>
     <input type="password" id="password" autocomplete="current-password" minlength="6" placeholder="Password (min 6 chars)" />
 
-    <div id="message"></div>
     <button type="submit" id="submit-btn" disabled>Register</button>
   </form>
 
@@ -170,9 +159,13 @@
 <!-- EmailJS SDK -->
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 
+<!-- SweetAlert2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
   // Initialize EmailJS (Replace YOUR_EMAILJS_USER_ID with your EmailJS user ID)
-  emailjs.init("ZMLQ7jZCVJi1ssffU");
+  emailjs.init("
+ZMLQ7jZCVJi1ssffU");
 
   // Firebase config - REPLACE with your Firebase project config
   const firebaseConfig = {
@@ -185,6 +178,7 @@
   appId: "1:780477534762:web:26a98d067ebca133e8a953",
   measurementId: "G-CLTY47FSSZ"
 };
+
   // Initialize Firebase
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
@@ -198,7 +192,6 @@
   const passwordInput = document.getElementById('password');
   const sendOtpBtn = document.getElementById('send-otp-btn');
   const submitBtn = document.getElementById('submit-btn');
-  const messageEl = document.getElementById('message');
   const toggleFormBtn = document.getElementById('toggle-form');
   const formTitle = document.getElementById('form-title');
   const otpContainer = document.getElementById('otp-container');
@@ -211,12 +204,32 @@
   let otpVerified = false;
 
   function clearMessage() {
-    messageEl.textContent = '';
-    messageEl.className = '';
+    // We no longer have in-page messages, so no action here.
   }
-  function showMessage(msg, isError = false) {
-    messageEl.textContent = msg;
-    messageEl.className = isError ? 'error' : 'success';
+  function showSuccess(message) {
+    Swal.fire({
+      icon: 'success',
+      title: 'Success',
+      text: message,
+      timer: 2500,
+      showConfirmButton: false,
+    });
+  }
+  function showError(message) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: message,
+    });
+  }
+  function showInfo(message) {
+    Swal.fire({
+      icon: 'info',
+      title: 'Info',
+      text: message,
+      timer: 1800,
+      showConfirmButton: false,
+    });
   }
 
   // Generate 6-digit OTP
@@ -233,16 +246,13 @@
 
   // Validate form inputs and enable/disable submit button
   function validateForm() {
-    clearMessage();
     if (isLoginMode) {
-      // Login mode: enable if email and password valid
       if (validateEmail(emailInput.value) && passwordInput.value.length >= 6) {
         submitBtn.disabled = false;
       } else {
         submitBtn.disabled = true;
       }
     } else {
-      // Register mode: username 3+, email valid, OTP verified, password 6+
       if (
         usernameInput.value.trim().length >= 3 &&
         validateEmail(emailInput.value) &&
@@ -257,7 +267,6 @@
   }
 
   function validateEmail(email) {
-    // Basic email regex
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return re.test(email);
   }
@@ -271,14 +280,13 @@
   }
 
   sendOtpBtn.addEventListener('click', () => {
-    clearMessage();
     const email = confirmEmailInput.value.trim();
     if (!validateEmail(email)) {
-      showMessage('Please enter a valid confirm email for OTP.', true);
+      showError('Please enter a valid confirm email for OTP.');
       return;
     }
     if (email !== emailInput.value.trim()) {
-      showMessage('Confirm email must match the email entered above.', true);
+      showError('Confirm email must match the email entered above.');
       return;
     }
     generatedOtp = generateOtp();
@@ -286,12 +294,12 @@
     sendOtpBtn.textContent = 'Sending...';
     sendOtpEmail(email, generatedOtp)
       .then(() => {
-        showMessage('OTP sent! Check your email.');
+        showSuccess('OTP sent! Check your email.');
         sendOtpBtn.textContent = 'Resend OTP';
         validateForm();
       })
       .catch(() => {
-        showMessage('Failed to send OTP. Please try again.', true);
+        showError('Failed to send OTP. Please try again.');
         generatedOtp = null;
         sendOtpBtn.textContent = 'Send OTP';
       })
@@ -301,7 +309,6 @@
   });
 
   otpInput.addEventListener('input', () => {
-    clearMessage();
     if (!generatedOtp) {
       otpVerified = false;
       validateForm();
@@ -311,21 +318,19 @@
     if (userOtp.length === 6) {
       if (userOtp === generatedOtp) {
         otpVerified = true;
-        showMessage('OTP verified successfully!');
+        showSuccess('OTP verified successfully!');
       } else {
         otpVerified = false;
-        showMessage('Invalid OTP. Please try again.', true);
+        showError('Invalid OTP. Please try again.');
       }
     } else {
       otpVerified = false;
-      clearMessage();
     }
     validateForm();
   });
 
   toggleFormBtn.addEventListener('click', () => {
     isLoginMode = !isLoginMode;
-    clearMessage();
     resetOtpState();
     form.reset();
 
@@ -345,7 +350,6 @@
       submitBtn.textContent = 'Login';
       toggleFormBtn.textContent = "Don't have an account? Register";
 
-      // For login email autocomplete password
       emailInput.setAttribute('autocomplete', 'email');
       passwordInput.setAttribute('autocomplete', 'current-password');
     } else {
@@ -370,7 +374,6 @@
     validateForm();
   });
 
-  // On inputs change validate form
   [usernameInput, emailInput, confirmEmailInput, otpInput, passwordInput].forEach((input) => {
     input.addEventListener('input', () => {
       if (!isLoginMode && (input === confirmEmailInput)) {
@@ -382,66 +385,76 @@
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
-    clearMessage();
 
     const username = usernameInput.value.trim();
     const email = emailInput.value.trim();
     const password = passwordInput.value;
 
     if (isLoginMode) {
-      // Login
       auth.signInWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-          showMessage('Login successful! Redirecting...');
+        .then(userCredential => {
+          showSuccess('Login successful! Redirecting...');
           setTimeout(() => {
-            alert(`Welcome back, ${userCredential.user.email}! You are now logged in to ShooterSpaceW.`);
-            form.reset();
-            clearMessage();
-          }, 1000);
+            Swal.fire({
+              icon: 'success',
+              title: 'Welcome back!',
+              text: `You are now logged in to ShooterSpaceW as ${userCredential.user.email}`,
+              confirmButtonText: 'OK',
+            }).then(() => {
+              form.reset();
+              resetOtpState();
+            });
+          }, 1500);
         })
-        .catch((error) => {
-          if (error.code === 'auth/user-not-found') {
-            showMessage('User not found. Please register first.', true);
-          } else if (error.code === 'auth/wrong-password') {
-            showMessage('Incorrect password. Please try again.', true);
-          } else if (error.code === 'auth/invalid-email') {
-            showMessage('Invalid email format.', true);
-          } else {
-            showMessage(`Login error: ${error.message}`, true);
+        .catch(error => {
+          switch (error.code) {
+            case 'auth/user-not-found':
+              showError('User not found. Please register first.');
+              break;
+            case 'auth/wrong-password':
+              showError('Incorrect password. Please try again.');
+              break;
+            case 'auth/invalid-email':
+              showError('Invalid email format.');
+              break;
+            default:
+              showError(`Login error: ${error.message}`);
           }
         });
     } else {
-      // Register
       if (!otpVerified) {
-        showMessage('Please verify OTP before registering.', true);
+        showError('Please verify OTP before registering.');
         return;
       }
       auth.createUserWithEmailAndPassword(email, password)
-        .then((userCredential) => {
+        .then(userCredential => {
           const user = userCredential.user;
           user.updateProfile({ displayName: username }).then(() => {
-            showMessage('Registration successful! You can now login.');
+            showSuccess('Registration successful! You can now login.');
             form.reset();
             resetOtpState();
-            // Switch to login mode automatically
             toggleFormBtn.click();
           });
         })
-        .catch((error) => {
-          if (error.code === 'auth/email-already-in-use') {
-            showMessage('Email already in use. Please login.', true);
-          } else if (error.code === 'auth/invalid-email') {
-            showMessage('Invalid email format.', true);
-          } else if (error.code === 'auth/weak-password') {
-            showMessage('Weak password. Minimum 6 characters.', true);
-          } else {
-            showMessage(`Registration error: ${error.message}`, true);
+        .catch(error => {
+          switch (error.code) {
+            case 'auth/email-already-in-use':
+              showError('Email already in use. Please login.');
+              break;
+            case 'auth/invalid-email':
+              showError('Invalid email format.');
+              break;
+            case 'auth/weak-password':
+              showError('Weak password. Minimum 6 characters.');
+              break;
+            default:
+              showError(`Registration error: ${error.message}`);
           }
         });
     }
   });
 
-  // Initialize page in login mode as default or register mode
+  // Initialize page - default to Register mode
   toggleFormBtn.click();
 
 </script>
