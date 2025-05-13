@@ -43,13 +43,18 @@
     font-size: 0.9rem;
     color: #a0f9f3;
   }
+  .input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin-bottom: 18px;
+  }
   input[type="text"],
   input[type="email"],
   input[type="password"],
   input[type="number"] {
     width: 100%;
-    padding: 10px 14px;
-    margin-bottom: 18px;
+    padding: 10px 40px 10px 14px; /* padding-right for icon space */
     border: none;
     border-radius: 6px;
     background-color: #142c34;
@@ -64,7 +69,17 @@
     outline: none;
     background-color: #1e434c;
   }
+  .password-toggle {
+    position: absolute;
+    right: 12px;
+    cursor: pointer;
+    width: 24px;
+    height: 24px;
+    fill: #a0f9f3;
+    user-select: none;
+  }
   button {
+    position: relative;
     width: 100%;
     background: #00ffd8;
     color: #0b2a2f;
@@ -76,6 +91,7 @@
     cursor: pointer;
     margin-bottom: 15px;
     transition: background 0.3s;
+    overflow: hidden;
   }
   button:hover:not(:disabled) {
     background: #00c9b1;
@@ -94,7 +110,6 @@
     margin-top: 5px;
     width: 100%;
   }
-
   .otp-container {
     display: flex;
     gap: 10px;
@@ -111,7 +126,28 @@
     padding: 10px;
     font-size: 0.9rem;
   }
-
+  /* Spinner styling */
+  .spinner {
+    width: 18px;
+    height: 18px;
+    border: 3px solid rgba(11,42,47, 0.3);
+    border-top-color: #0b2a2f;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    position: absolute;
+    top: calc(50% - 9px);
+    left: calc(50% - 9px);
+    display: none;
+  }
+  button.loading .spinner {
+    display: block;
+  }
+  button.loading span {
+    visibility: hidden;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
   @media (max-width: 400px) {
     #container {
       width: 95vw;
@@ -120,33 +156,43 @@
     }
   }
 </style>
+
 <!-- SweetAlert2 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet" />
+
 </head>
 <body>
 
 <div id="container">
   <h2 id="form-title">Register ShooterSpaceW</h2>
   <form id="auth-form" novalidate>
-    <label for="username" id="label-username">Username</label>
-    <input type="text" id="username" autocomplete="username" minlength="3" maxlength="20" placeholder="Your username" />
-
     <label for="email">Email</label>
-    <input type="email" id="email" autocomplete="email" placeholder="email@example.com" />
-
-    <label for="confirm-email" id="label-confirm-email">Confirm Email (send OTP)</label>
-    <div class="otp-container" id="otp-container">
-      <input type="email" id="confirm-email" autocomplete="email" placeholder="Confirm your email for OTP" />
-      <button type="button" id="send-otp-btn">Send OTP</button>
+    <div class="input-wrapper">
+      <input type="email" id="email" autocomplete="email" placeholder="email@example.com" />
     </div>
 
-    <label for="otp" id="label-otp">Enter OTP</label>
-    <input type="number" id="otp" placeholder="6-digit OTP" maxlength="6" />
-
     <label for="password">Password</label>
-    <input type="password" id="password" autocomplete="current-password" minlength="6" placeholder="Password (min 6 chars)" />
+    <div class="input-wrapper">
+      <input type="password" id="password" autocomplete="new-password" minlength="6" placeholder="Password (min 6 chars)" />
+      <svg class="password-toggle" id="toggle-password" viewBox="0 0 24 24" tabindex="0" aria-label="Toggle password visibility" role="button" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zm0-7a2.5 2.5 0 0 0 0 5 2.5 2.5 0 0 0 0-5z"/>
+      </svg>
+    </div>
 
-    <button type="submit" id="submit-btn" disabled>Register</button>
+    <label for="confirm-password" id="label-confirm-password" style="display:none;">Confirm Password</label>
+    <div class="input-wrapper" style="display:none;" id="confirm-password-wrapper">
+      <input type="password" id="confirm-password" autocomplete="new-password" minlength="6" placeholder="Confirm Password" />
+      <svg class="password-toggle" id="toggle-confirm-password" viewBox="0 0 24 24" tabindex="0" aria-label="Toggle confirm password visibility" role="button" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zm0-7a2.5 2.5 0 0 0 0 5 2.5 2.5 0 0 0 0-5z"/>
+      </svg>
+    </div>
+
+    <div class="otp-container" id="otp-container">
+      <label for="otp" style="margin-bottom:6px; color:#a0f9f3; font-weight:500; font-size:0.9rem;">Enter OTP</label>
+      <input type="number" id="otp" placeholder="6-digit OTP" maxlength="6" style="flex-grow:1; margin-bottom: 0;" />
+    </div>
+
+    <button type="submit" id="submit-btn"><span>Register</span><div class="spinner"></div></button>
   </form>
 
   <button id="toggle-form">Already have an account? Login</button>
@@ -163,11 +209,8 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-  // Initialize EmailJS (Replace YOUR_EMAILJS_USER_ID with your EmailJS user ID)
-  emailjs.init("
-ZMLQ7jZCVJi1ssffU");
+  emailjs.init("ZMLQ7jZCVJi1ssffU");
 
-  // Firebase config - REPLACE with your Firebase project config
   const firebaseConfig = {
   apiKey: "AIzaSyCLDqFv1kiOFG4xH8XR-lUyW_j-FbBp8aM",
   authDomain: "shooterspacew.firebaseapp.com",
@@ -178,43 +221,38 @@ ZMLQ7jZCVJi1ssffU");
   appId: "1:780477534762:web:26a98d067ebca133e8a953",
   measurementId: "G-CLTY47FSSZ"
 };
-
-  // Initialize Firebase
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
 
-  // Form elements references
   const form = document.getElementById('auth-form');
-  const usernameInput = document.getElementById('username');
   const emailInput = document.getElementById('email');
-  const confirmEmailInput = document.getElementById('confirm-email');
-  const otpInput = document.getElementById('otp');
   const passwordInput = document.getElementById('password');
-  const sendOtpBtn = document.getElementById('send-otp-btn');
+  const confirmPasswordInput = document.getElementById('confirm-password');
+  const confirmPasswordWrapper = document.getElementById('confirm-password-wrapper');
+  const labelConfirmPassword = document.getElementById('label-confirm-password');
+  const otpInput = document.getElementById('otp');
   const submitBtn = document.getElementById('submit-btn');
+  const submitBtnText = submitBtn.querySelector('span');
   const toggleFormBtn = document.getElementById('toggle-form');
   const formTitle = document.getElementById('form-title');
   const otpContainer = document.getElementById('otp-container');
-  const labelUsername = document.getElementById('label-username');
-  const labelConfirmEmail = document.getElementById('label-confirm-email');
-  const labelOtp = document.getElementById('label-otp');
-
+  const togglePasswordIcon = document.getElementById('toggle-password');
+  const toggleConfirmPasswordIcon = document.getElementById('toggle-confirm-password');
+  
   let isLoginMode = false;
   let generatedOtp = null;
   let otpVerified = false;
 
-  function clearMessage() {
-    // We no longer have in-page messages, so no action here.
-  }
   function showSuccess(message) {
     Swal.fire({
       icon: 'success',
       title: 'Success',
       text: message,
       timer: 2500,
-      showConfirmButton: false,
+      showConfirmButton: false
     });
   }
+
   function showError(message) {
     Swal.fire({
       icon: 'error',
@@ -222,19 +260,10 @@ ZMLQ7jZCVJi1ssffU");
       text: message,
     });
   }
-  function showInfo(message) {
-    Swal.fire({
-      icon: 'info',
-      title: 'Info',
-      text: message,
-      timer: 1800,
-      showConfirmButton: false,
-    });
-  }
 
-  // Generate 6-digit OTP
-  function generateOtp() {
-    return Math.floor(100000 + Math.random() * 900000).toString();
+  function validateEmail(email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email.trim());
   }
 
   function resetOtpState() {
@@ -244,68 +273,35 @@ ZMLQ7jZCVJi1ssffU");
     submitBtn.disabled = true;
   }
 
-  // Validate form inputs and enable/disable submit button
   function validateForm() {
     if (isLoginMode) {
-      if (validateEmail(emailInput.value) && passwordInput.value.length >= 6) {
-        submitBtn.disabled = false;
-      } else {
-        submitBtn.disabled = true;
-      }
+      submitBtn.disabled = !(validateEmail(emailInput.value) && passwordInput.value.length >= 6);
     } else {
-      if (
-        usernameInput.value.trim().length >= 3 &&
-        validateEmail(emailInput.value) &&
-        otpVerified &&
-        passwordInput.value.length >= 6
-      ) {
-        submitBtn.disabled = false;
-      } else {
-        submitBtn.disabled = true;
-      }
+      const passwordsMatch = passwordInput.value === confirmPasswordInput.value && confirmPasswordInput.value.length >= 6;
+      submitBtn.disabled = !(validateEmail(emailInput.value) && otpVerified && passwordInput.value.length >= 6 && passwordsMatch);
     }
   }
 
-  function validateEmail(email) {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(email);
+  // Toggle password visibility helpers
+  function togglePasswordVisibility(inputElement, iconElement) {
+    if (inputElement.type === "password") {
+      inputElement.type = "text";
+      iconElement.innerHTML = eyeSlashSVG;
+    } else {
+      inputElement.type = "password";
+      iconElement.innerHTML = eyeSVG;
+    }
   }
 
-  // Send OTP email via EmailJS
-  function sendOtpEmail(email, otp) {
-    return emailjs.send('service_8fsbu8n', 'template_g46cxyi', {
-      to_email: email,
-      otp_code: otp,
-    });
-  }
+  const eyeSVG = `<path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zm0-7a2.5 2.5 0 0 0 0 5 2.5 2.5 0 0 0 0-5z"/>`;
+  const eyeSlashSVG = `<path d="M12 6.5c3.05 0 5.71 1.47 7.27 3.75a11.243 11.243 0 0 1-1.64 1.88l1.44 1.44a13.221 13.221 0 0 0 2.08-2.17A14.341 14.341 0 0 0 12 5.5c-1.59 0-3.11.35-4.5 1l1.44 1.44A5.41 5.41 0 0 1 12 6.5zM2.1 3.51 1 4.61l3.74 3.74A11.8 11.8 0 0 0 1 12c1.83 3.77 6.48 7.5 11 7.5.92 0 1.84-.16 2.7-.45l2.61 2.61 1.11-1.11L2.1 3.5zM12 17.5c-2.43 0-4.41-1.87-4.49-4.27l4.76 4.76c-.13.01-.27.01-.4.01zm5.51-3.19-1.75-1.75A4.5 4.5 0 0 1 12 8.5c.7 0 1.37.17 1.94.47l-1.71-1.71a6.47 6.47 0 0 0-6.59-1.84c1.82-1 4.1-1.39 6.31-.84a11.936 11.936 0 0 1 4.68 2.23c.28.22.54.45.78.7-.2 1.6-1.15 3.02-2.41 3.94z"/>`;
 
-  sendOtpBtn.addEventListener('click', () => {
-    const email = confirmEmailInput.value.trim();
-    if (!validateEmail(email)) {
-      showError('Please enter a valid confirm email for OTP.');
-      return;
-    }
-    if (email !== emailInput.value.trim()) {
-      showError('Confirm email must match the email entered above.');
-      return;
-    }
-    generatedOtp = generateOtp();
-    sendOtpBtn.disabled = true;
-    sendOtpBtn.textContent = 'Sending...';
-    sendOtpEmail(email, generatedOtp)
-      .then(() => {
-        showSuccess('OTP sent! Check your email.');
-        sendOtpBtn.textContent = 'Resend OTP';
-        validateForm();
-      })
-      .catch(() => {
-        showError('Failed to send OTP. Please try again.');
-        generatedOtp = null;
-        sendOtpBtn.textContent = 'Send OTP';
-      })
-      .finally(() => {
-        sendOtpBtn.disabled = false;
-      });
+  togglePasswordIcon.addEventListener('click', () => {
+    togglePasswordVisibility(passwordInput, togglePasswordIcon);
+  });
+
+  toggleConfirmPasswordIcon.addEventListener('click', () => {
+    togglePasswordVisibility(confirmPasswordInput, toggleConfirmPasswordIcon);
   });
 
   otpInput.addEventListener('input', () => {
@@ -336,127 +332,119 @@ ZMLQ7jZCVJi1ssffU");
 
     if (isLoginMode) {
       formTitle.textContent = 'Login ShooterSpaceW';
-
-      usernameInput.style.display = 'none';
-      labelUsername.style.display = 'none';
-
+      labelConfirmPassword.style.display = 'none';
+      confirmPasswordWrapper.style.display = 'none';
       otpContainer.style.display = 'none';
-      confirmEmailInput.style.display = 'none';
-      labelConfirmEmail.style.display = 'none';
-
-      otpInput.style.display = 'none';
-      labelOtp.style.display = 'none';
-
-      submitBtn.textContent = 'Login';
+      submitBtnText.textContent = 'Login';
       toggleFormBtn.textContent = "Don't have an account? Register";
-
-      emailInput.setAttribute('autocomplete', 'email');
-      passwordInput.setAttribute('autocomplete', 'current-password');
     } else {
       formTitle.textContent = 'Register ShooterSpaceW';
-
-      usernameInput.style.display = 'block';
-      labelUsername.style.display = 'block';
-
+      labelConfirmPassword.style.display = 'block';
+      confirmPasswordWrapper.style.display = 'flex';
       otpContainer.style.display = 'flex';
-      confirmEmailInput.style.display = 'block';
-      labelConfirmEmail.style.display = 'block';
-
-      otpInput.style.display = 'block';
-      labelOtp.style.display = 'block';
-
-      submitBtn.textContent = 'Register';
+      submitBtnText.textContent = 'Register';
       toggleFormBtn.textContent = 'Already have an account? Login';
-
-      emailInput.setAttribute('autocomplete', 'email');
-      passwordInput.setAttribute('autocomplete', 'new-password');
     }
     validateForm();
   });
 
-  [usernameInput, emailInput, confirmEmailInput, otpInput, passwordInput].forEach((input) => {
+  [emailInput, passwordInput, confirmPasswordInput, otpInput].forEach((input) => {
     input.addEventListener('input', () => {
-      if (!isLoginMode && (input === confirmEmailInput)) {
-        resetOtpState();
-      }
       validateForm();
     });
   });
 
+  function setLoading(isLoading) {
+    if (isLoading) {
+      submitBtn.disabled = true;
+      submitBtn.classList.add('loading');
+    } else {
+      submitBtn.disabled = false;
+      submitBtn.classList.remove('loading');
+    }
+  }
+
   form.addEventListener('submit', (e) => {
     e.preventDefault();
+    setLoading(true);
 
-    const username = usernameInput.value.trim();
     const email = emailInput.value.trim();
     const password = passwordInput.value;
 
     if (isLoginMode) {
       auth.signInWithEmailAndPassword(email, password)
-        .then(userCredential => {
-          showSuccess('Login successful! Redirecting...');
-          setTimeout(() => {
-            Swal.fire({
-              icon: 'success',
-              title: 'Welcome back!',
-              text: `You are now logged in to ShooterSpaceW as ${userCredential.user.email}`,
-              confirmButtonText: 'OK',
-            }).then(() => {
-              form.reset();
-              resetOtpState();
-            });
-          }, 1500);
-        })
-        .catch(error => {
-          switch (error.code) {
-            case 'auth/user-not-found':
-              showError('User not found. Please register first.');
-              break;
-            case 'auth/wrong-password':
-              showError('Incorrect password. Please try again.');
-              break;
-            case 'auth/invalid-email':
-              showError('Invalid email format.');
-              break;
-            default:
-              showError(`Login error: ${error.message}`);
-          }
-        });
+      .then(userCredential => {
+        setLoading(false);
+        showSuccess('Login successful! Redirecting...');
+        setTimeout(() => {
+          Swal.fire({
+            icon: 'success',
+            title: 'Welcome back!',
+            text: `You are now logged in to ShooterSpaceW as ${userCredential.user.email}`,
+            confirmButtonText: 'OK'
+          }).then(() => {
+            form.reset();
+            resetOtpState();
+          });
+        }, 1500);
+      })
+      .catch(error => {
+        setLoading(false);
+        switch (error.code) {
+          case 'auth/user-not-found':
+            showError('User not found. Please register first.');
+            break;
+          case 'auth/wrong-password':
+            showError('Incorrect password. Please try again.');
+            break;
+          case 'auth/invalid-email':
+            showError('Invalid email format.');
+            break;
+          default:
+            showError(`Login error: ${error.message}`);
+        }
+      });
     } else {
       if (!otpVerified) {
+        setLoading(false);
         showError('Please verify OTP before registering.');
         return;
       }
+      if (password !== confirmPasswordInput.value) {
+        setLoading(false);
+        showError('Passwords do not match.');
+        return;
+      }
       auth.createUserWithEmailAndPassword(email, password)
-        .then(userCredential => {
-          const user = userCredential.user;
-          user.updateProfile({ displayName: username }).then(() => {
-            showSuccess('Registration successful! You can now login.');
-            form.reset();
-            resetOtpState();
-            toggleFormBtn.click();
-          });
-        })
-        .catch(error => {
-          switch (error.code) {
-            case 'auth/email-already-in-use':
-              showError('Email already in use. Please login.');
-              break;
-            case 'auth/invalid-email':
-              showError('Invalid email format.');
-              break;
-            case 'auth/weak-password':
-              showError('Weak password. Minimum 6 characters.');
-              break;
-            default:
-              showError(`Registration error: ${error.message}`);
-          }
+      .then(userCredential => {
+        userCredential.user.updateProfile({ displayName: '' }).then(() => {
+          setLoading(false);
+          showSuccess('Registration successful! You can now login.');
+          form.reset();
+          resetOtpState();
+          toggleFormBtn.click();
         });
+      })
+      .catch(error => {
+        setLoading(false);
+        switch (error.code) {
+          case 'auth/email-already-in-use':
+            showError('Email already in use. Please login.');
+            break;
+          case 'auth/invalid-email':
+            showError('Invalid email format.');
+            break;
+          case 'auth/weak-password':
+            showError('Weak password. Minimum 6 characters.');
+            break;
+          default:
+            showError(`Registration error: ${error.message}`);
+        }
+      });
     }
   });
 
-  // Initialize page - default to Register mode
   toggleFormBtn.click();
-
 </script>
 
 </body>
