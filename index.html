@@ -166,6 +166,9 @@
 <div id="container">
   <h2 id="form-title">Register ShooterSpaceW</h2>
   <form id="auth-form" novalidate>
+    <label for="username" id="label-username">Username</label>
+    <input type="text" id="username" autocomplete="username" minlength="3" maxlength="20" placeholder="Your username" />
+
     <label for="email">Email</label>
     <div class="input-wrapper">
       <input type="email" id="email" autocomplete="email" placeholder="email@example.com" />
@@ -174,22 +177,15 @@
     <label for="password">Password</label>
     <div class="input-wrapper">
       <input type="password" id="password" autocomplete="new-password" minlength="6" placeholder="Password (min 6 chars)" />
-      <svg class="password-toggle" id="toggle-password" viewBox="0 0 24 24" tabindex="0" aria-label="Toggle password visibility" role="button" xmlns="http://www.w3.org/2000/svg">
+      <svg id="toggle-password" class="password-toggle" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" tabindex="0" aria-label="Toggle password visibility" role="button">
         <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zm0-7a2.5 2.5 0 0 0 0 5 2.5 2.5 0 0 0 0-5z"/>
       </svg>
     </div>
 
-    <label for="confirm-password" id="label-confirm-password" style="display:none;">Confirm Password</label>
-    <div class="input-wrapper" style="display:none;" id="confirm-password-wrapper">
-      <input type="password" id="confirm-password" autocomplete="new-password" minlength="6" placeholder="Confirm Password" />
-      <svg class="password-toggle" id="toggle-confirm-password" viewBox="0 0 24 24" tabindex="0" aria-label="Toggle confirm password visibility" role="button" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zm0-7a2.5 2.5 0 0 0 0 5 2.5 2.5 0 0 0 0-5z"/>
-      </svg>
-    </div>
-
-    <div class="otp-container" id="otp-container">
+    <div class="otp-container">
       <label for="otp" style="margin-bottom:6px; color:#a0f9f3; font-weight:500; font-size:0.9rem;">Enter OTP</label>
-      <input type="number" id="otp" placeholder="6-digit OTP" maxlength="6" style="flex-grow:1; margin-bottom: 0;" />
+      <input type="number" id="otp" placeholder="6-digit OTP" maxlength="6" />
+      <button type="button" id="send-otp-btn">Send OTP</button>
     </div>
 
     <button type="submit" id="submit-btn"><span>Register</span><div class="spinner"></div></button>
@@ -203,7 +199,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 
 <!-- EmailJS SDK -->
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 
 <!-- SweetAlert2 JS -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -225,23 +221,30 @@
   const auth = firebase.auth();
 
   const form = document.getElementById('auth-form');
+  const usernameInput = document.getElementById('username');
   const emailInput = document.getElementById('email');
   const passwordInput = document.getElementById('password');
-  const confirmPasswordInput = document.getElementById('confirm-password');
-  const confirmPasswordWrapper = document.getElementById('confirm-password-wrapper');
-  const labelConfirmPassword = document.getElementById('label-confirm-password');
   const otpInput = document.getElementById('otp');
+  const sendOtpBtn = document.getElementById('send-otp-btn');
   const submitBtn = document.getElementById('submit-btn');
   const submitBtnText = submitBtn.querySelector('span');
   const toggleFormBtn = document.getElementById('toggle-form');
   const formTitle = document.getElementById('form-title');
-  const otpContainer = document.getElementById('otp-container');
   const togglePasswordIcon = document.getElementById('toggle-password');
-  const toggleConfirmPasswordIcon = document.getElementById('toggle-confirm-password');
-  
+
   let isLoginMode = false;
   let generatedOtp = null;
   let otpVerified = false;
+
+  togglePasswordIcon.addEventListener('click', () => {
+    if (passwordInput.type === "password") {
+      passwordInput.type = "text";
+      togglePasswordIcon.style.fill = "#00c9b1";
+    } else {
+      passwordInput.type = "password";
+      togglePasswordIcon.style.fill = "#a0f9f3";
+    }
+  });
 
   function showSuccess(message) {
     Swal.fire({
@@ -277,31 +280,46 @@
     if (isLoginMode) {
       submitBtn.disabled = !(validateEmail(emailInput.value) && passwordInput.value.length >= 6);
     } else {
-      const passwordsMatch = passwordInput.value === confirmPasswordInput.value && confirmPasswordInput.value.length >= 6;
-      submitBtn.disabled = !(validateEmail(emailInput.value) && otpVerified && passwordInput.value.length >= 6 && passwordsMatch);
+      submitBtn.disabled = !(usernameInput.value.trim().length >= 3 && validateEmail(emailInput.value) && otpVerified && passwordInput.value.length >= 6);
     }
   }
 
-  // Toggle password visibility helpers
-  function togglePasswordVisibility(inputElement, iconElement) {
-    if (inputElement.type === "password") {
-      inputElement.type = "text";
-      iconElement.innerHTML = eyeSlashSVG;
-    } else {
-      inputElement.type = "password";
-      iconElement.innerHTML = eyeSVG;
-    }
+  function generateOtp() {
+    return Math.floor(100000 + Math.random() * 900000).toString();
   }
 
-  const eyeSVG = `<path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zm0-7a2.5 2.5 0 0 0 0 5 2.5 2.5 0 0 0 0-5z"/>`;
-  const eyeSlashSVG = `<path d="M12 6.5c3.05 0 5.71 1.47 7.27 3.75a11.243 11.243 0 0 1-1.64 1.88l1.44 1.44a13.221 13.221 0 0 0 2.08-2.17A14.341 14.341 0 0 0 12 5.5c-1.59 0-3.11.35-4.5 1l1.44 1.44A5.41 5.41 0 0 1 12 6.5zM2.1 3.51 1 4.61l3.74 3.74A11.8 11.8 0 0 0 1 12c1.83 3.77 6.48 7.5 11 7.5.92 0 1.84-.16 2.7-.45l2.61 2.61 1.11-1.11L2.1 3.5zM12 17.5c-2.43 0-4.41-1.87-4.49-4.27l4.76 4.76c-.13.01-.27.01-.4.01zm5.51-3.19-1.75-1.75A4.5 4.5 0 0 1 12 8.5c.7 0 1.37.17 1.94.47l-1.71-1.71a6.47 6.47 0 0 0-6.59-1.84c1.82-1 4.1-1.39 6.31-.84a11.936 11.936 0 0 1 4.68 2.23c.28.22.54.45.78.7-.2 1.6-1.15 3.02-2.41 3.94z"/>`;
+  function sendOtpEmail(email, otp) {
+    return emailjs.send('service_8fsbu8n', 'template_g46cxyi', {
+      to_email: email.trim(),
+      otp_code: otp,
+    });
+  }
 
-  togglePasswordIcon.addEventListener('click', () => {
-    togglePasswordVisibility(passwordInput, togglePasswordIcon);
-  });
+  sendOtpBtn.addEventListener('click', () => {
+    const email = emailInput.value.trim();
+    if (!validateEmail(email)) {
+      showError('Please enter a valid email address.');
+      return;
+    }
+    generatedOtp = generateOtp();
+    sendOtpBtn.disabled = true;
+    sendOtpBtn.textContent = 'Sending...';
 
-  toggleConfirmPasswordIcon.addEventListener('click', () => {
-    togglePasswordVisibility(confirmPasswordInput, toggleConfirmPasswordIcon);
+    sendOtpEmail(email, generatedOtp)
+      .then(() => {
+        showSuccess('OTP sent! Check your email.');
+        sendOtpBtn.textContent = 'Resend OTP';
+        validateForm();
+      })
+      .catch((err) => {
+        console.error('EmailJS error:', err);
+        showError('Failed to send OTP. Please try again later.');
+        generatedOtp = null;
+        sendOtpBtn.textContent = 'Send OTP';
+      })
+      .finally(() => {
+        sendOtpBtn.disabled = false;
+      });
   });
 
   otpInput.addEventListener('input', () => {
@@ -329,52 +347,48 @@
     isLoginMode = !isLoginMode;
     resetOtpState();
     form.reset();
+    passwordInput.type = 'password';
+    togglePasswordIcon.style.fill = "#a0f9f3";
 
     if (isLoginMode) {
       formTitle.textContent = 'Login ShooterSpaceW';
-      labelConfirmPassword.style.display = 'none';
-      confirmPasswordWrapper.style.display = 'none';
-      otpContainer.style.display = 'none';
+      usernameInput.style.display = 'none';
+      otpInput.style.display = 'none';
+      sendOtpBtn.style.display = 'none';
       submitBtnText.textContent = 'Login';
       toggleFormBtn.textContent = "Don't have an account? Register";
     } else {
       formTitle.textContent = 'Register ShooterSpaceW';
-      labelConfirmPassword.style.display = 'block';
-      confirmPasswordWrapper.style.display = 'flex';
-      otpContainer.style.display = 'flex';
+      usernameInput.style.display = 'block';
+      otpInput.style.display = 'inline-block';
+      sendOtpBtn.style.display = 'inline-block';
       submitBtnText.textContent = 'Register';
       toggleFormBtn.textContent = 'Already have an account? Login';
     }
     validateForm();
   });
 
-  [emailInput, passwordInput, confirmPasswordInput, otpInput].forEach((input) => {
+  [usernameInput, emailInput, passwordInput, otpInput].forEach(input => {
     input.addEventListener('input', () => {
       validateForm();
     });
   });
 
-  function setLoading(isLoading) {
-    if (isLoading) {
-      submitBtn.disabled = true;
-      submitBtn.classList.add('loading');
-    } else {
-      submitBtn.disabled = false;
-      submitBtn.classList.remove('loading');
-    }
-  }
-
   form.addEventListener('submit', (e) => {
     e.preventDefault();
-    setLoading(true);
 
+    const username = usernameInput.value.trim();
     const email = emailInput.value.trim();
     const password = passwordInput.value;
+
+    submitBtn.disabled = true;
+    submitBtn.classList.add('loading');
 
     if (isLoginMode) {
       auth.signInWithEmailAndPassword(email, password)
       .then(userCredential => {
-        setLoading(false);
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('loading');
         showSuccess('Login successful! Redirecting...');
         setTimeout(() => {
           Swal.fire({
@@ -389,7 +403,8 @@
         }, 1500);
       })
       .catch(error => {
-        setLoading(false);
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('loading');
         switch (error.code) {
           case 'auth/user-not-found':
             showError('User not found. Please register first.');
@@ -406,19 +421,16 @@
       });
     } else {
       if (!otpVerified) {
-        setLoading(false);
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('loading');
         showError('Please verify OTP before registering.');
-        return;
-      }
-      if (password !== confirmPasswordInput.value) {
-        setLoading(false);
-        showError('Passwords do not match.');
         return;
       }
       auth.createUserWithEmailAndPassword(email, password)
       .then(userCredential => {
-        userCredential.user.updateProfile({ displayName: '' }).then(() => {
-          setLoading(false);
+        userCredential.user.updateProfile({ displayName: username }).then(() => {
+          submitBtn.disabled = false;
+          submitBtn.classList.remove('loading');
           showSuccess('Registration successful! You can now login.');
           form.reset();
           resetOtpState();
@@ -426,7 +438,8 @@
         });
       })
       .catch(error => {
-        setLoading(false);
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('loading');
         switch (error.code) {
           case 'auth/email-already-in-use':
             showError('Email already in use. Please login.');
@@ -444,7 +457,9 @@
     }
   });
 
-  toggleFormBtn.click();
+  toggleFormBtn.click();  // initialize in register mode
+
+window.location.href = 'dashboard.html'
 </script>
 
 </body>
