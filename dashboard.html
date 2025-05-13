@@ -1,451 +1,290 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-<title>Dashboard - SpaceShooter</title>
-<style>
-  * {margin:0; padding:0; box-sizing:border-box;}
-  html, body {
-    height: 100%;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #0a0f23;
-    color: #e0e7ff;
-    user-select: none;
-  }
-  #app {
-    max-width: 350px;
-    min-height: 600px;
-    margin: 20px auto;
-    padding: 15px;
-    background: #121926;
-    border-radius: 10px;
-    box-shadow: 0 0 15px #1d26a0aa;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-  header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-  }
-  header h2 {
-    color: #90a0ff;
-    font-weight: 600;
-  }
-  #btn-logout {
-    background: #bb2d2d;
-    border: none;
-    color: white;
-    padding: 8px 14px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: background 0.3s ease;
-  }
-  #btn-logout:hover {
-    background: #e04f4f;
-  }
-  section {
-    margin-bottom: 20px;
-  }
-  h3 {
-    color: #90a0ff;
-    font-weight: 600;
-    margin-bottom: 8px;
-  }
-  #profile p {
-    margin: 6px 0;
-  }
-  #leaderboard table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  #leaderboard th, #leaderboard td {
-    padding: 6px 8px;
-    text-align: left;
-  }
-  #leaderboard th {
-    background: #2a2f54;
-    font-weight: 600;
-    color: #a2b6ff;
-  }
-  #leaderboard tbody tr:nth-child(odd) {
-    background: #1e2250;
-  }
-  #leaderboard tbody tr:nth-child(even) {
-    background: #262b5c;
-  }
-  #leaderboard tbody tr:hover {
-    background: #3b4ddb;
-    color: #dce4ff;
-  }
-  #game-section {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-  }
-  #game-container {
-    position: relative;
-    background: #0f1434;
-    border: 2px solid #3949ab;
-    border-radius: 10px;
-    overflow: hidden;
-    height: 400px;
-  }
-  canvas {
-    width: 100%;
-    height: 100%;
-    display: block;
-    background: radial-gradient(circle at center, #141a4b 20%, #020718 100%);
-  }
-  #game-info {
-    margin-top: 6px;
-    color: #90a0ff;
-    font-weight: 600;
-    display: flex;
-    justify-content: space-between;
-  }
-  #btn-start-game {
-    margin-top: 10px;
-    background: #3b4ddb;
-    border: none;
-    color: white;
-    padding: 10px 14px;
-    border-radius: 6px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.3s ease;
-  }
-  #btn-start-game:hover:not(:disabled) {
-    background: #5c72ff;
-  }
-  #btn-start-game:disabled {
-    background: #3b4ddb80;
-    cursor: not-allowed;
-  }
-</style>
-
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>User Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0f23;
+            color: #e0e7ff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .dashboard-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #121926;
+            border-radius: 10px;
+            box-shadow: 0 0 15px #1d26a0aa;
+            padding: 20px;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #2a2f54;
+        }
+        h1 {
+            color: #90a0ff;
+            font-size: 1.5rem;
+        }
+        .btn {
+            background: #3949ab;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .btn:hover {
+            background: #303f9f;
+        }
+        .btn-start {
+            background: #4caf50;
+            margin-right: 10px;
+        }
+        .btn-start:hover {
+            background: #3d8b40;
+        }
+        .btn-group {
+            display: flex;
+        }
+        .profile-section {
+            background: #1a2035;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+        .profile-section h2 {
+            color: #90a0ff;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+        .profile-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .info-card {
+            background: #242b45;
+            padding: 12px;
+            border-radius: 6px;
+        }
+        .info-card h3 {
+            color: #a2b6ff;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+        .info-card p {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        .leaderboard-section {
+            background: #1a2035;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .leaderboard-section h2 {
+            color: #90a0ff;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th {
+            background: #2a2f54;
+            color: #a2b6ff;
+            padding: 10px;
+            text-align: left;
+            font-weight: 600;
+        }
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #2a2f54;
+        }
+        tr:nth-child(even) {
+            background: #242b45;
+        }
+        .rank {
+            font-weight: bold;
+            color: #90a0ff;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #90a0ff;
+            font-style: italic;
+        }
+    </style>
 </head>
 <body>
-<div id="app">
-  <header>
-    <h2>SpaceShooter Dashboard</h2>
-    <button id="btn-logout" aria-label="Logout">Logout</button>
-  </header>
+    <div class="dashboard-container">
+        <header>
+            <h1>User Dashboard</h1>
+            <div class="btn-group">
+                <button id="start-game-btn" class="btn btn-start">Start Game</button>
+                <button id="logout-btn" class="btn">Logout</button>
+            </div>
+        </header>
 
-  <section id="profile" aria-label="User profile">
-    <h3>Your Profile</h3>
-    <p><strong>Email:</strong> <span id="user-email"></span></p>
-    <p><strong>Total Points:</strong> <span id="user-points">0</span></p>
-  </section>
+        <section class="profile-section">
+            <h2>Your Profile</h2>
+            <div class="profile-info">
+                <div class="info-card">
+                    <h3>Email</h3>
+                    <p id="user-email">loading...</p>
+                </div>
+                <div class="info-card">
+                    <h3>Total Points</h3>
+                    <p id="user-points">0</p>
+                </div>
+                <div class="info-card">
+                    <h3>Games Played</h3>
+                    <p id="games-played">0</p>
+                </div>
+                <div class="info-card">
+                    <h3>Last Login</h3>
+                    <p id="last-login">-</p>
+                </div>
+            </div>
+        </section>
 
-  <section id="leaderboard" aria-label="Leaderboard">
-    <h3>Leaderboard - Top Players</h3>
-    <table>
-      <thead>
-        <tr><th>Rank</th><th>Email</th><th>Points</th></tr>
-      </thead>
-      <tbody id="leaderboard-body">
-        <!-- leaderboard rows go here -->
-      </tbody>
-    </table>
-  </section>
-
-  <section id="game-section" aria-label="Space shooter game">
-    <h3>Play Space Shooter!</h3>
-    <div id="game-container">
-      <canvas id="game-canvas" width="350" height="400" aria-label="Space shooter game canvas"></canvas>
+        <section class="leaderboard-section">
+            <h2>Top Players</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Player</th>
+                        <th>Points</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard-body">
+                    <tr>
+                        <td colspan="3" class="loading">Loading leaderboard...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
     </div>
-    <div id="game-info">
-      <div>Score: <span id="game-score">0</span></div>
-      <div>Lives: <span id="game-lives">3</span></div>
-    </div>
-    <button id="btn-start-game">Start New Game</button>
-  </section>
-</div>
 
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            databaseURL: "YOUR_DATABASE_URL",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        // DOM Elements
+        const userEmailEl = document.getElementById('user-email');
+        const userPointsEl = document.getElementById('user-points');
+        const gamesPlayedEl = document.getElementById('games-played');
+        const lastLoginEl = document.getElementById('last-login');
+        const leaderboardBody = document.getElementById('leaderboard-body');
+        const logoutBtn = document.getElementById('logout-btn');
+        const startGameBtn = document.getElementById('start-game-btn');
+
+        // Load user data
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                // Display basic user info
+                userEmailEl.textContent = user.email;
+                lastLoginEl.textContent = new Date().toLocaleString();
+                
+                // Load user data from database
+                database.ref('users/' + user.uid).once('value')
+                    .then(snapshot => {
+                        const userData = snapshot.val();
+                        if (userData) {
+                            userPointsEl.textContent = userData.points || 0;
+                            gamesPlayedEl.textContent = userData.gamesPlayed || 0;
+                        }
+                    });
+                
+                // Load leaderboard
+                loadLeaderboard();
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+
+        // Load leaderboard data
+        function loadLeaderboard() {
+            database.ref('users').orderByChild('points').limitToLast(10).once('value')
+                .then(snapshot => {
+                    leaderboardBody.innerHTML = '';
+                    
+                    const users = [];
+                    snapshot.forEach(childSnapshot => {
+                        users.push({
+                            email: childSnapshot.val().email,
+                            points: childSnapshot.val().points || 0
+                        });
+                    });
+                    
+                    // Sort by points descending
+                    users.sort((a, b) => b.points - a.points);
+                    
+                    // Display top 10
+                    users.slice(0, 10).forEach((user, index) => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td class="rank">${index + 1}</td>
+                            <td>${user.email}</td>
+                            <td>${user.points}</td>
+                        `;
+                        leaderboardBody.appendChild(row);
+                    });
+                });
+        }
+
+        // Start Game function
+        startGameBtn.addEventListener('click', () => {
+            // Redirect to game.html
+            window.location.href = 'game.html';
+        });
+
+        // Logout function
+        logoutBtn.addEventListener('click', () => {
+            auth.signOut()
+                .then(() => {
+                    window.location.href = 'login.html';
+                })
+                .catch(error => {
+                    console.error('Logout error:', error);
+                });
+        });
+    </script>
 <script>
-  // Firebase config (replace with your Firebase project's config)
-
-const firebaseConfig = {
-  apiKey: "AIzaSyCLDqFv1kiOFG4xH8XR-lUyW_j-FbBp8aM",
-  authDomain: "shooterspacew.firebaseapp.com",
-  projectId: "shooterspacew",
-  storageBucket: "shooterspacew.firebasestorage.app",
-  messagingSenderId: "780477534762",
-  appId: "1:780477534762:web:26a98d067ebca133e8a953",
-  measurementId: "G-CLTY47FSSZ"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-
-  // Cached elements
-  const btnLogout = document.getElementById('btn-logout');
-  const userEmailDisplay = document.getElementById('user-email');
-  const userPointsDisplay = document.getElementById('user-points');
-  const leaderboardBody = document.getElementById('leaderboard-body');
-  const btnStartGame = document.getElementById('btn-start-game');
-  const gameScoreDisplay = document.getElementById('game-score');
-  const gameLivesDisplay = document.getElementById('game-lives');
-  const canvas = document.getElementById('game-canvas');
-  const ctx = canvas.getContext('2d');
-
-  let currentUser = null;
-  let userPoints = 0;
-
-  // Leaderboard helpers - stored in localStorage under 'spaceShooterLeaderboard'
-  function loadLeaderboard() {
-    const lb = localStorage.getItem('spaceShooterLeaderboard');
-    if (lb) return JSON.parse(lb);
-    return [];
-  }
-  function saveLeaderboard(data) {
-    localStorage.setItem('spaceShooterLeaderboard', JSON.stringify(data));
-  }
-  function updateLeaderboard(email, points) {
-    let leaderboard = loadLeaderboard();
-    const idx = leaderboard.findIndex(u => u.email === email);
-    if(idx !== -1){
-      if(points > leaderboard[idx].points){
-        leaderboard[idx].points = points;
-      }
-    } else {
-      leaderboard.push({email, points});
-    }
-    leaderboard.sort((a,b) => b.points - a.points);
-    leaderboard = leaderboard.slice(0,10);
-    saveLeaderboard(leaderboard);
-  }
-  function renderLeaderboard() {
-    const leaderboard = loadLeaderboard();
-    leaderboardBody.innerHTML = '';
-    leaderboard.forEach((item, i) => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${i+1}</td><td>${item.email}</td><td>${item.points}</td>`;
-      leaderboardBody.appendChild(tr);
-    });
-  }
-
-  // Auth state and UI initialization
-  auth.onAuthStateChanged(user => {
-    if(!user){
-      window.location.href = 'index.html'; // redirect if not logged in
-      return;
-    }
-    if(!user.emailVerified){
-      window.location.href = 'verify.html'; // enforce verification redirect
-      return;
-    }
-    currentUser = user;
-    userEmailDisplay.textContent = user.email;
-    const storedPoints = localStorage.getItem('points_' + user.uid);
-    userPoints = storedPoints ? parseInt(storedPoints, 10) : 0;
-    userPointsDisplay.textContent = userPoints;
-    renderLeaderboard();
-  });
-
-  btnLogout.addEventListener('click', () => {
-    auth.signOut().then(() => {
-      window.location.href = 'index.html';
-    });
-  });
-
-  // --- GAME CODE ---
-  // Variables for game similar to single page app but here separate
-
-  const GAME_WIDTH = 350;
-  const GAME_HEIGHT = 400;
-
-  let gameRunning = false;
-  let score = 0;
-  let lives = 3;
-
-  // Player ship
-  const ship = {
-    x: GAME_WIDTH / 2 - 15,
-    y: GAME_HEIGHT - 60,
-    width: 30,
-    height: 30,
-    speed: 5,
-    bullets: []
-  };
-
-  // Alien class
-  class Alien {
-    constructor(x, y, speed) {
-      this.x = x;
-      this.y = y;
-      this.width = 28;
-      this.height = 28;
-      this.speed = speed;
-      this.isAlive = true;
-    }
-    move() {
-      this.y += this.speed;
-      if(this.y > GAME_HEIGHT){
-        this.isAlive = false;
-        lives--;
-        updateGameInfo();
-        if(lives <= 0) endGame();
-      }
-    }
-    draw(ctx){
-      if(!this.isAlive) return;
-      ctx.fillStyle = '#e56565';
-      ctx.beginPath();
-      ctx.moveTo(this.x, this.y + this.height);
-      ctx.lineTo(this.x + this.width / 2, this.y);
-      ctx.lineTo(this.x + this.width, this.y + this.height);
-      ctx.closePath();
-      ctx.fill();
-    }
-  }
-
-  // Bullet class
-  class Bullet {
-    constructor(x, y, speed){
-      this.x = x;
-      this.y = y;
-      this.width = 4;
-      this.height = 10;
-      this.speed = speed;
-      this.active = true;
-    }
-    move() {
-      this.y -= this.speed;
-      if(this.y < 0) this.active = false;
-    }
-    draw(ctx){
-      if(!this.active) return;
-      ctx.fillStyle = '#90a0ff';
-      ctx.fillRect(this.x, this.y, this.width, this.height);
-    }
-  }
-
-  let aliens = [];
-  const keys = {left:false, right:false, shooting:false};
-  let lastShootTime = 0;
-  const shootCooldown = 300;
-
-  function updateGameInfo(){
-    gameScoreDisplay.textContent = score;
-    gameLivesDisplay.textContent = lives;
-  }
-
-  function keyDownHandler(e){
-    if(e.key === "ArrowLeft" || e.key === "a" || e.key === "A") keys.left = true;
-    if(e.key === "ArrowRight" || e.key === "d" || e.key === "D") keys.right = true;
-    if(e.key === " " || e.key === "ArrowUp" || e.key === "w" || e.key === "W") keys.shooting = true;
-  }
-  function keyUpHandler(e){
-    if(e.key === "ArrowLeft" || e.key === "a" || e.key === "A") keys.left = false;
-    if(e.key === "ArrowRight" || e.key === "d" || e.key === "D") keys.right = false;
-    if(e.key === " " || e.key === "ArrowUp" || e.key === "w" || e.key === "W") keys.shooting = false;
-  }
-
-  function gameLoop(timestamp){
-    if(!gameRunning) return;
-    ctx.clearRect(0,0,GAME_WIDTH,GAME_HEIGHT);
-
-    if(keys.left && ship.x > 0) ship.x -= ship.speed;
-    if(keys.right && ship.x < GAME_WIDTH - ship.width) ship.x += ship.speed;
-
-    if(keys.shooting && timestamp - lastShootTime > shootCooldown){
-      ship.bullets.push(new Bullet(ship.x + ship.width / 2 - 2, ship.y, 6));
-      lastShootTime = timestamp;
-    }
-
-    ship.bullets.forEach(bullet=>{
-      bullet.move();
-      bullet.draw(ctx);
-    });
-    ship.bullets = ship.bullets.filter(b => b.active);
-
-    aliens.forEach(alien=>{
-      alien.move();
-      alien.draw(ctx);
-    });
-    aliens = aliens.filter(a => a.isAlive);
-
-    for(let bullet of ship.bullets){
-      for(let alien of aliens){
-        if(alien.isAlive && bullet.active &&
-           bullet.x < alien.x + alien.width &&
-           bullet.x + bullet.width > alien.x &&
-           bullet.y < alien.y + alien.height &&
-           bullet.y + bullet.height > alien.y){
-             alien.isAlive = false;
-             bullet.active = false;
-             score += 10;
-             updateGameInfo();
-           }
-      }
-    }
-
-    ctx.fillStyle = '#7caeff';
-    ctx.beginPath();
-    ctx.moveTo(ship.x, ship.y + ship.height);
-    ctx.lineTo(ship.x + ship.width / 2, ship.y);
-    ctx.lineTo(ship.x + ship.width, ship.y + ship.height);
-    ctx.closePath();
-    ctx.fill();
-
-    if(Math.random() < 0.02 && aliens.length < 6){
-      const xPos = Math.random() * (GAME_WIDTH - 28);
-      const speed = 1 + Math.random() * 1.5;
-      aliens.push(new Alien(xPos, -30, speed));
-    }
-
-    if(lives <= 0){
-      endGame();
-      return;
-    }
-
-    requestAnimationFrame(gameLoop);
-  }
-
-  function endGame(){
-    gameRunning = false;
-    updateGameInfo();
-    alert(`Game Over! Your score: ${score}`);
-    userPoints += score;
-    userPointsDisplay.textContent = userPoints;
-    localStorage.setItem("points_" + currentUser.uid, userPoints);
-    updateLeaderboard(currentUser.email, userPoints);
-    renderLeaderboard();
-    btnStartGame.disabled = false;
-  }
-
-  btnStartGame.addEventListener('click', () => {
-    if(!currentUser) return;
-    score = 0;
-    lives = 3;
-    updateGameInfo();
-    ship.bullets = [];
-    aliens = [];
-    ship.x = GAME_WIDTH / 2 - 15;
-    ship.y = GAME_HEIGHT - 60;
-    gameRunning = true;
-    btnStartGame.disabled = true;
-    requestAnimationFrame(gameLoop);
-  });
-
-  window.addEventListener('keydown', keyDownHandler);
-  window.addEventListener('keyup', keyUpHandler);
-
-  // Basic touch controls for mobile could be implemented here if needed later
+window.location.href = "index.html"
 </script>
 </body>
-  </html>
+</html>
